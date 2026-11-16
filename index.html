@@ -305,6 +305,7 @@
   .phempty{grid-column:1/-1; font-size:13px; color:var(--muted); padding:6px 2px}
   .phbtns{display:flex; gap:8px; margin-top:10px}
   .phtip{margin-top:7px; line-height:1.55}
+  .backrow{display:flex; flex-wrap:wrap; gap:8px; margin-top:8px}
 
   #photoView{position:fixed; inset:0; z-index:90; display:none; flex-direction:column;
     background:rgba(6,7,9,.985); color:#fff}
@@ -579,7 +580,7 @@ function rd(k,d){ try{ var v=localStorage.getItem(k); return v?JSON.parse(v):d; 
 function wr(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } }
 
 var DEF = { mode:"down", theme:"auto", bg:"", bgBlur:0, veil:0.28, glassA:0.72, glassBlur:16, fit:"cover" };
-var VER = "v5.2 · 2026-11-16";
+var VER = "v5.3 · 2026-11-16";
 var cfg = rd(LS_CFG, {});
 for(var k in DEF){ if(cfg[k]===undefined) cfg[k]=DEF[k]; }
 var loads = rd(LS_LOAD, {});
@@ -726,11 +727,11 @@ function keepAwake(){
 function dropAwake(){ try{ if(wl){ wl.release(); wl=null; } }catch(e){} }
 
 /* ================= 会话 ================= */
-var S = { day:null, i:0, done:{} };
+var S = { day:null, i:0, done:{}, date:null };
 
 function saveSess(){
   if(!S.day){ try{ localStorage.removeItem(LS_SESS); }catch(e){} return; }
-  wr(LS_SESS, { day:S.day, i:S.i, done:S.done, ts:Date.now() });
+  wr(LS_SESS, { day:S.day, i:S.i, done:S.done, date:S.date, ts:Date.now() });
 }
 function readSess(){
   var s = rd(LS_SESS, null);
@@ -747,11 +748,12 @@ function ago(ts){
   if(h < 24) return h + " 小时前";
   return Math.round(h/24) + " 天前";
 }
-function startSession(day, restore){
+function startSession(day, restore, date){
   var s = restore || null;
   S.day = day;
   S.i = s ? Math.min(s.i||0, PLAN[day].items.length-1) : 0;
   S.done = s ? (s.done||{}) : {};
+  S.date = (s && s.date) || date || todayStr();
   keepAwake(); saveSess(); renderSession();
 }
 function curItems(){ return PLAN[S.day].items; }
@@ -820,13 +822,44 @@ function bindTabbar(){
   });
 }
 
+/* 按实际轮转给建议：A→B→C→D→A，不按星期几死排 */
+function nextOf(day){
+  var order = ["A","B","C","D"];
+  var i = order.indexOf(day);
+  if(i < 0) return "A";
+  return order[(i+1) % order.length];
+}
+function latestHis(){
+  if(!his.length) return null;
+  var arr = his.slice().sort(function(a,b){
+    if(a.date === b.date) return (a.ts||0) - (b.ts||0);
+    return a.date < b.date ? -1 : 1;
+  });
+  return arr[arr.length-1];
+}
+function todayHis(){
+  var t = todayStr();
+  for(var i=his.length-1;i>=0;i--){ if(his[i].date === t) return his[i]; }
+  return null;
+}
+function suggestDay(){
+  var done = todayHis();
+  if(done) return { day: nextOf(done.day), done: done };
+  var last = latestHis();
+  if(last) return { day: nextOf(last.day), last: last };
+  return { day: WEEKDAY_PICK[new Date().getDay()] || null };
+}
+
 /* ---- 第 1 栏：开始健身 ---- */
 function renderFit(){
-  var pick = WEEKDAY_PICK[new Date().getDay()];
+  var sg = suggestDay();
+  var pick = sg.day;
   var sess = readSess();
   var h = "";
   h += '<div class="sub" style="margin:12px 0 12px">今天 ' + todayStr() + ' · 本周已练 ' + weekCount() + ' 天'
-     + (pick ? ' · 今天建议 ' + PLAN[pick].name : ' · 今天休息') + '</div>';
+     + (sg.done
+          ? ' · 今天已完成 ' + PLAN[sg.done.day].name + (pick ? ' · 下次 ' + PLAN[pick].name : '')
+          : (pick ? ' · 今天建议 ' + PLAN[pick].name : ' · 今天休息')) + '</div>';
 
   if(sess){
     var p0 = PLAN[sess.day], dn = 0;
@@ -843,7 +876,7 @@ function renderFit(){
 
   ORDER.forEach(function(k){
     var p=PLAN[k], last=lastOf(k);
-    var tag = (k===pick) ? '<span class="pill">今天</span>' : '';
+    var tag = (k===pick) ? ('<span class="pill">'+(sg.done?'下次':'今天')+'</span>') : '';
     var lastTxt = last ? ("上次 " + last.date + " · " + last.sets + " 组") : "还没练过";
     var ms = mainSets(k), cs = totalSets(k) - ms;
     var setTxt = ms + " 组" + (cs ? " + 核心 " + cs : "");
@@ -963,6 +996,14 @@ function renderCalendar(){
        +   '</div>'
        +   '<div class="tiny muted phtip">想相册里也留一份，就用「从相册选」（相册是原图，这边存压缩版）</div>'
        + '</div>';
+    h += '<div style="margin-top:14px;padding-top:12px;border-top:1px dashed var(--line)">'
+       +   '<div class="tiny muted">补录：这天练的是哪一块？点一下就进去记（完成记到这天）</div>'
+       +   '<div class="backrow">'
+       +     ORDER.slice(0,4).map(function(k){
+               return '<button class="btn-sm btn-soft" data-back="'+k+'">'+PLAN[k].name+'</button>';
+             }).join("")
+       +   '</div>'
+       + '</div>';
     h += '<button class="btn-sm btn-soft" data-wnote="'+SELKEY+'" style="margin-top:12px">给这天写心得</button>'
        + '</div>';
   }
@@ -986,6 +1027,12 @@ function renderCalendar(){
     if(wn){ NOTE_DATE = wn.getAttribute("data-wnote"); TAB = "note"; renderApp(); return; }
     if(e.target.closest("[data-pick]")){ pickPhotos(SELKEY); return; }
     if(e.target.closest("[data-snap]")){ snapPhoto(SELKEY); return; }
+    var bk = e.target.closest("[data-back]");
+    if(bk){
+      var dk = bk.getAttribute("data-back");
+      startSession(dk, null, SELKEY);
+      return;
+    }
     var ph = e.target.closest("[data-pid]");
     if(ph){ openViewer(SELKEY, ph.getAttribute("data-pid")); return; }
   };
@@ -1151,7 +1198,16 @@ function revokePh(){
 }
 function paintPhotos(date){
   if(!document.getElementById("phgrid")) return;
+  var c0 = document.getElementById("phcnt");
+  var done = false;
+  var guard = setTimeout(function(){
+    if(done) return;
+    done = true;
+    var c = document.getElementById("phcnt");
+    if(c) c.textContent = "这台浏览器存不了照片";
+  }, 4000);
   phByDate(date).then(function(list){
+    done = true; clearTimeout(guard);
     var g = document.getElementById("phgrid"); if(!g) return;
     var c = document.getElementById("phcnt");
     if(c) c.textContent = list.length + " / " + PH_MAX + " 张";
@@ -1174,6 +1230,7 @@ function paintPhotos(date){
       d.appendChild(im); g.appendChild(d);
     });
   }).catch(function(){
+    done = true; clearTimeout(guard);
     var c = document.getElementById("phcnt");
     if(c) c.textContent = "照片读不出来";
   });
@@ -1452,6 +1509,9 @@ function renderSession(keepScroll){
      +   '<div class="row"><button class="btn-sm btn-soft" data-a="back">‹ 返回</button>'
      +     '<div class="grow"></div>'
      +     '<div class="small muted">'+p.name+' · '+(S.i+1)+'/'+curItems().length+'</div></div>'
+     +   (S.date && S.date !== todayStr()
+            ? '<div class="tiny" style="margin-top:6px;color:var(--a)">补录 · '+S.date+'（完成记到这一天）</div>'
+            : '')
      +   '<div class="bar-outer"><div class="bar-inner" style="width:'+pct+'%;background:'+p.hex+'"></div></div>'
      +   '<div class="tiny muted" style="margin-top:6px">已完成 '+dn+' / '+total+' 组</div>'
      + '</div>';
@@ -1538,19 +1598,27 @@ function tapSet(i){
 }
 function finishSession(){
   var total=totalSets(S.day), dn=dayDoneSets();
-  his.push({ ts:Date.now(), date:todayStr(), day:S.day, sets:dn, total:total });
+  var dt = S.date || todayStr();
+  var merged = false;
+  for(var i=0;i<his.length;i++){
+    if(his[i].date===dt && his[i].day===S.day){
+      his[i].sets = dn; his[i].total = total; his[i].ts = Date.now(); merged = true; break;
+    }
+  }
+  if(!merged) his.push({ ts:Date.now(), date:dt, day:S.day, sets:dn, total:total });
   wr(LS_HIS,his);
   clearSess(); closeRest(); dropAwake();
 
+  var dayName = PLAN[S.day].name;
   var box=$("#session");
   box.innerHTML =
       '<div style="padding:40px 8px;text-align:center">'
     +   '<div style="font-size:44px;margin-bottom:6px">✓</div>'
-    +   '<h2>今天 '+dn+' / '+total+' 组</h2>'
-    +   '<div class="sub" style="margin:8px 0 22px">'+PLAN[S.day].name+' · '+todayStr()+'</div>'
+    +   '<h2>'+dn+' / '+total+' 组</h2>'
+    +   '<div class="sub" style="margin:8px 0 22px">'+dayName+' · '+dt+(dt!==todayStr()?'（补录）':'')+'</div>'
     +   '<button class="btn-main" data-a="home" style="min-width:200px">回到首页</button>'
     + '</div>';
-  box.onclick=function(e){ if(e.target.closest("[data-a=home]")){ S.day=null; renderHome(); } };
+  box.onclick=function(e){ if(e.target.closest("[data-a=home]")){ S.day=null; S.date=null; renderHome(); } };
 }
 
 /* ================= 设置面板 ================= */
