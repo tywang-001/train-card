@@ -537,7 +537,7 @@ function rd(k,d){ try{ var v=localStorage.getItem(k); return v?JSON.parse(v):d; 
 function wr(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } }
 
 var DEF = { mode:"down", theme:"auto", bg:"", bgBlur:0, veil:0.28, glassA:0.72, glassBlur:16, fit:"cover" };
-var VER = "v5.0 · 2026-11-16";
+var VER = "v5.1 · 2026-11-16";
 var cfg = rd(LS_CFG, {});
 for(var k in DEF){ if(cfg[k]===undefined) cfg[k]=DEF[k]; }
 var loads = rd(LS_LOAD, {});
@@ -759,6 +759,23 @@ function renderApp(){
   else if(TAB==="note") renderNotes();
   else if(TAB==="set") renderSettings();
   else renderFit();
+}
+
+/* 底部四栏的点击（事件委托，图标里的 svg/path 也算） */
+function bindTabbar(){
+  var nav = document.getElementById("tabbar");
+  if(!nav || nav.__bound) return;
+  nav.__bound = 1;
+  nav.addEventListener("click", function(e){
+    var el = e.target;
+    while(el && el !== nav && !(el.getAttribute && el.getAttribute("data-tab"))) el = el.parentNode;
+    if(!el || el === nav) return;
+    var t = el.getAttribute("data-tab");
+    if(!t) return;
+    TAB = t;
+    renderApp();
+    window.scrollTo(0, 0);
+  });
 }
 
 /* ---- 第 1 栏：开始健身 ---- */
@@ -1316,6 +1333,7 @@ applyLook();
   var sess = readSess();
   if(sp && !sess){ initSplash(); }
   else if(sp){ sp.style.display = "none"; }
+  bindTabbar();
   if(sess){ TAB = "fit"; renderApp(); }
   else { renderApp(); }
 })();
