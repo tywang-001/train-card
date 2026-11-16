@@ -491,25 +491,16 @@ var PLAN = {
       cue:"腰贴地；对侧手脚慢慢伸远；伸的时候呼气",
       tell:"下腹发力，腰不拱起来", vid:V("死虫式 核心 教学") }
   ]},
-  B: { name:"B · 下肢", sub:"蹲 · 髋铰链 · 后链", hex:"var(--b)", items:[
+  B: { name:"B · 下肢", sub:"蹲 · 单腿 · 腿后", hex:"var(--b)", items:[
     { id:"sq", nm:"杠铃深蹲", sets:4, reps:"6–8", load:"70", rest:150,
       cue:"屁股先往后坐再往下；膝盖跟着脚尖方向；全程别塌腰",
       tell:"大腿前侧 + 臀酸，腰不酸", vid:V("杠铃深蹲 新手 教学") },
-    { id:"rdl", nm:"罗马尼亚硬拉", sets:3, reps:"8–10", load:"50", rest:120,
-      cue:"膝微屈固定；屁股后推、杆贴腿下滑；腿后有拉伸就起，不用碰地",
-      tell:"腰不酸才算对 —— 腰酸就是用腰拽了", vid:V("罗马尼亚硬拉 RDL 教学") },
-    { id:"bss", nm:"保加利亚蹲", sets:2, reps:"8–10/侧", load:"自重", rest:90,
-      cue:"前脚站远一点；下坐时身体略前倾；起身用前脚踩地",
+    { id:"bss", nm:"保加利亚蹲", sets:2, reps:"8–10/侧", load:"10/手", rest:90,
+      cue:"每手 10 kg；前脚站远一点；下坐时身体略前倾；起身用前脚踩地",
       tell:"前腿臀 + 腿酸，后腿不酸", vid:V("保加利亚分腿蹲") },
     { id:"lc", nm:"俯卧腿弯举", sets:2, reps:"10–12", load:"25–30", rest:60,
       cue:"慢下慢上不甩；顶端停半秒",
-      tell:"腿后侧（腘绳）烧", vid:V("俯卧腿弯举") },
-    { id:"cal", nm:"提踵", sets:2, reps:"12–15", load:"自重", rest:60,
-      cue:"全幅度；底端停 1 秒再起",
-      tell:"小腿肚烧", vid:V("站姿提踵 小腿") },
-    { id:"plk", nm:"侧平板", sets:2, reps:"30 秒/侧", load:"自重", rest:45, core:true,
-      cue:"身体一条线；髋不塌、肩不塌；呼吸别停",
-      tell:"侧腰（腹斜肌）发抖", vid:V("侧平板支撑") }
+      tell:"腿后侧（腘绳）烧", vid:V("俯卧腿弯举") }
   ]},
   C: { name:"C · 上肢拉", sub:"背 · 后束 · 二头", hex:"var(--c)", items:[
     { id:"row", nm:"划船（三选一）", sets:4, reps:"8–10", load:"25", rest:120,
@@ -580,10 +571,20 @@ function rd(k,d){ try{ var v=localStorage.getItem(k); return v?JSON.parse(v):d; 
 function wr(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } }
 
 var DEF = { mode:"down", theme:"auto", bg:"", bgBlur:0, veil:0.28, glassA:0.72, glassBlur:16, fit:"cover" };
-var VER = "v5.3 · 2026-11-16";
+var VER = "v5.4 · 2026-11-16";
 var cfg = rd(LS_CFG, {});
 for(var k in DEF){ if(cfg[k]===undefined) cfg[k]=DEF[k]; }
 var loads = rd(LS_LOAD, {});
+/* 一次性迁移：保加利亚蹲改成每手 10 kg，把旧的"自重 / 5"覆盖掉（只动这一项） */
+(function(){
+  var old = loads.bss;
+  if(old === undefined || old === null) return;
+  var s = String(old).replace(/\s/g, "");
+  if(s === "" || s === "自重" || s === "5" || s === "0" || s === "空手" || s === "5kg"){
+    loads.bss = "10/手";
+    wr(LS_LOAD, loads);
+  }
+})();
 var his = rd(LS_HIS, []);
 var notes = rd(LS_NOTE, {});
 
