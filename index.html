@@ -105,6 +105,7 @@
   .daycard .cnt{font-size:14px;color:var(--muted);font-weight:400;white-space:nowrap}
   .pill{display:inline-block;font-size:12px;padding:3px 9px;border-radius:999px;
     background:rgba(47,111,237,.16);color:var(--a);margin-left:8px;vertical-align:middle}
+  .pill-done{background:rgba(58,190,130,.18);color:#37c489}
 
   button{font:inherit;color:inherit;
     background:rgba(var(--glassRGB), calc(var(--glassA) * .78));
@@ -486,10 +487,7 @@ var PLAN = {
       tell:"三头外侧（手臂后面）烧", vid:V("绳索下压 三头") },
     { id:"fr1", nm:"面拉", sets:2, reps:"15", load:"10–15", rest:60,
       cue:"绳高于头，往额头方向拉；末端外旋（手背朝上）",
-      tell:"后束 + 肩胛之间发酸", vid:V("面拉 face pull 教学") },
-    { id:"bug", nm:"死虫", sets:2, reps:"10/侧", load:"自重", rest:45, core:true,
-      cue:"腰贴地；对侧手脚慢慢伸远；伸的时候呼气",
-      tell:"下腹发力，腰不拱起来", vid:V("死虫式 核心 教学") }
+      tell:"后束 + 肩胛之间发酸", vid:V("面拉 face pull 教学") }
   ]},
   B: { name:"B · 下肢", sub:"蹲 · 单腿 · 腿后", hex:"var(--b)", items:[
     { id:"sq", nm:"杠铃深蹲", sets:4, reps:"6–8", load:"70", rest:150,
@@ -503,9 +501,9 @@ var PLAN = {
       tell:"腿后侧（腘绳）烧", vid:V("俯卧腿弯举") }
   ]},
   C: { name:"C · 上肢拉", sub:"背 · 后束 · 二头", hex:"var(--c)", items:[
-    { id:"row", nm:"划船（三选一）", sets:4, reps:"8–10", load:"25", rest:120,
-      cue:"肩胛先动、再拉手肘；身不后仰；拉到腹或胸下沿（胸支撑／单臂／T 杆任选）",
-      tell:"肩胛之间 + 背阔酸，下背不酸", vid:V("胸支撑坐姿划船 正确姿势") },
+    { id:"row", nm:"T 杆划船", sets:4, reps:"8–10", load:"25", rest:120,
+      cue:"肩胛先动、再拉手肘；身不后仰；拉到腹或胸下沿",
+      tell:"肩胛之间 + 背阔酸，下背不酸", vid:V("T杆划船 正确姿势") },
     { id:"pd", nm:"对握高位下拉", sets:4, reps:"10–12", load:"45", rest:90,
       cue:"先让肩胛上回旋，再用手肘往下带；胸口微微上提",
       tell:"腋下外沿 + 背阔外沿酸，二头不先累", vid:V("对握高位下拉") },
@@ -520,10 +518,7 @@ var PLAN = {
       tell:"后束（肩后侧）烧，斜方不酸", vid:V("反向飞鸟 后束") },
     { id:"curl", nm:"哑铃弯举", sets:2, reps:"10–12", load:"10", rest:60,
       cue:"肘固定不动；下放 2–3 秒",
-      tell:"二头烧，前臂不先累", vid:V("哑铃弯举 教学") },
-    { id:"bd", nm:"鸟狗", sets:2, reps:"8/侧", load:"自重", rest:45, core:true,
-      cue:"对侧手脚伸远；腰不塌；慢",
-      tell:"臀 + 腰的稳定感", vid:V("鸟狗式 核心") }
+      tell:"二头烧，前臂不先累", vid:V("哑铃弯举 教学") }
   ]},
   D: { name:"D · 肩 + 手臂", sub:"中束 · 后束 · 手臂", hex:"var(--d)", items:[
     { id:"lat2", nm:"侧平举", sets:5, reps:"12–15", load:"10", rest:60,
@@ -539,9 +534,7 @@ var PLAN = {
       cue:"同 A 日", tell:"后束 + 肩胛之间", vid:V("面拉 face pull 教学") },
     { id:"ss", nm:"三头 + 二头超级组", sets:3, reps:"12+12", load:"下压20 / 弯举10", rest:60,
       cue:"下压 12 + 弯举 12，中间不歇；一轮做完再休息",
-      tell:"手臂泵感上来，肘不疼", vid:V("三头二头 超级组") },
-    { id:"bug2", nm:"死虫", sets:2, reps:"10/侧", load:"自重", rest:45, core:true,
-      cue:"同 A 日", tell:"下腹发力，腰不拱", vid:V("死虫式 核心 教学") }
+      tell:"手臂泵感上来，肘不疼", vid:V("三头二头 超级组") }
   ]},
   L: { name:"轻日 · 有氧 + 核心", sub:"周六 · 20–30 分钟，不透支", hex:"#8a8f99", items:[
     { id:"card", nm:"有氧", sets:1, reps:"20–25 分钟", load:"快走/单车", rest:0,
@@ -563,7 +556,7 @@ var PLAN = {
 };
 
 var ORDER = ["A","B","C","D","L"];
-var WEEKDAY_PICK = {1:"A", 2:"B", 4:"C", 5:"D", 6:"L"};
+/* 排期不绑定星期几：以「最近一次完成的训练」为准往后循环，见 suggestDay() */
 
 /* ================= 存储 ================= */
 var LS_LOAD="sm_loads_v1", LS_HIS="sm_his_v1", LS_CFG="sm_cfg_v1", LS_SESS="sm_sess_v1", LS_NOTE="sm_notes_v1";
@@ -571,7 +564,7 @@ function rd(k,d){ try{ var v=localStorage.getItem(k); return v?JSON.parse(v):d; 
 function wr(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } }
 
 var DEF = { mode:"down", theme:"auto", bg:"", bgBlur:0, veil:0.28, glassA:0.72, glassBlur:16, fit:"cover" };
-var VER = "v5.4 · 2026-11-16";
+var VER = "v5.6 · 2026-11-17";
 var cfg = rd(LS_CFG, {});
 for(var k in DEF){ if(cfg[k]===undefined) cfg[k]=DEF[k]; }
 var loads = rd(LS_LOAD, {});
@@ -827,40 +820,58 @@ function bindTabbar(){
 function nextOf(day){
   var order = ["A","B","C","D"];
   var i = order.indexOf(day);
-  if(i < 0) return "A";
+  if(i < 0) return "A";                 /* L（有氧）或认不出的日子 → 回到 A */
   return order[(i+1) % order.length];
 }
+/* 日志日期是不补零的（2026-11-9），直接按字符串比大小会错，
+   统一压成 YYYYMMDD 再比 */
+function dateKey(d){
+  var p = String(d || "").split("-");
+  return (parseInt(p[0],10)||0)*10000 + (parseInt(p[1],10)||0)*100 + (parseInt(p[2],10)||0);
+}
+/* 最近一次完成的训练（按日期，其次按时刻） */
 function latestHis(){
-  if(!his.length) return null;
-  var arr = his.slice().sort(function(a,b){
-    if(a.date === b.date) return (a.ts||0) - (b.ts||0);
-    return a.date < b.date ? -1 : 1;
+  var best = null, bk = -1, bt = -1;
+  his.forEach(function(h){
+    if(!h || !h.date) return;
+    var k = dateKey(h.date), t = h.ts || 0;
+    if(k > bk || (k === bk && t >= bt)){ best = h; bk = k; bt = t; }
   });
-  return arr[arr.length-1];
+  return best;
 }
-function todayHis(){
-  var t = todayStr();
-  for(var i=his.length-1;i>=0;i--){ if(his[i].date === t) return his[i]; }
-  return null;
+/* 今天已经练过的日子：{A:true, C:true} */
+function todayDone(){
+  var t = todayStr(), m = {};
+  his.forEach(function(h){ if(h && h.date === t && h.day) m[h.day] = true; });
+  return m;
 }
+/* 排期只有一条规则：从「最近一次完成的训练」往后数一天；
+   今天已经练过的不会再推荐，最多绕一圈；一条记录都没有就从 A 开始。 */
 function suggestDay(){
-  var done = todayHis();
-  if(done) return { day: nextOf(done.day), done: done };
+  var td = todayDone();
   var last = latestHis();
-  if(last) return { day: nextOf(last.day), last: last };
-  return { day: WEEKDAY_PICK[new Date().getDay()] || null };
+  var pick = null;
+  if(last && PLAN[last.day]){
+    pick = nextOf(last.day);
+    for(var i = 0; i < 4 && td[pick]; i++) pick = nextOf(pick);
+    if(td[pick]) pick = null;           /* 今天已经练完一圈 */
+  } else {
+    pick = "A";
+  }
+  return { day: pick, doneToday: td, last: last };
 }
 
 /* ---- 第 1 栏：开始健身 ---- */
 function renderFit(){
   var sg = suggestDay();
-  var pick = sg.day;
+  var pick = sg.day, td = sg.doneToday;
   var sess = readSess();
   var h = "";
+  var doneNames = ORDER.filter(function(k){ return td[k]; })
+                       .map(function(k){ return PLAN[k].name; }).join("、");
   h += '<div class="sub" style="margin:12px 0 12px">今天 ' + todayStr() + ' · 本周已练 ' + weekCount() + ' 天'
-     + (sg.done
-          ? ' · 今天已完成 ' + PLAN[sg.done.day].name + (pick ? ' · 下次 ' + PLAN[pick].name : '')
-          : (pick ? ' · 今天建议 ' + PLAN[pick].name : ' · 今天休息')) + '</div>';
+     + (doneNames ? ' · 今天已完成 ' + doneNames : ' · 今天还没练')
+     + (pick ? ' · 下一次 ' + PLAN[pick].name : ' · 这一轮练完了') + '</div>';
 
   if(sess){
     var p0 = PLAN[sess.day], dn = 0;
@@ -877,7 +888,8 @@ function renderFit(){
 
   ORDER.forEach(function(k){
     var p=PLAN[k], last=lastOf(k);
-    var tag = (k===pick) ? ('<span class="pill">'+(sg.done?'下次':'今天')+'</span>') : '';
+    var tag = td[k] ? '<span class="pill pill-done">已完成</span>'
+            : (k === pick ? '<span class="pill">下次</span>' : '');
     var lastTxt = last ? ("上次 " + last.date + " · " + last.sets + " 组") : "还没练过";
     var ms = mainSets(k), cs = totalSets(k) - ms;
     var setTxt = ms + " 组" + (cs ? " + 核心 " + cs : "");
@@ -902,7 +914,10 @@ function renderFit(){
      + '点一个日子开始 · 每组点一下就自动休息（休息中组按钮会锁住）· '
      + (stOK ? '重量和进度都自动存，刷新不丢'
              : '这个浏览器存不住数据，练完先到「设置」里导出，下次可以导入找回来')
-     + '</div>';
+     + '</div>'
+     + '<div class="tiny muted" style="margin-top:8px;line-height:1.7">'
+     + '排期规则：按 A→B→C→D 循环，练完一天自动跳到下一天，今天练过的不会再标「下次」；'
+     + '想改顺序就直接点那天开始。</div>';
 
   var box=$("#home"); box.innerHTML=h; box.style.display="block";
   box.onclick=function(e){
@@ -1611,12 +1626,15 @@ function finishSession(){
   clearSess(); closeRest(); dropAwake();
 
   var dayName = PLAN[S.day].name;
+  var nxt = suggestDay().day;
   var box=$("#session");
   box.innerHTML =
       '<div style="padding:40px 8px;text-align:center">'
     +   '<div style="font-size:44px;margin-bottom:6px">✓</div>'
     +   '<h2>'+dn+' / '+total+' 组</h2>'
-    +   '<div class="sub" style="margin:8px 0 22px">'+dayName+' · '+dt+(dt!==todayStr()?'（补录）':'')+'</div>'
+    +   '<div class="sub" style="margin:8px 0 6px">'+dayName+' · '+dt+(dt!==todayStr()?'（补录）':'')+'</div>'
+    +   '<div class="tiny muted" style="margin:0 0 22px">'
+    +     (nxt ? '下一次：'+PLAN[nxt].name : '今天已经练完一圈，休息吧') + '</div>'
     +   '<button class="btn-main" data-a="home" style="min-width:200px">回到首页</button>'
     + '</div>';
   box.onclick=function(e){ if(e.target.closest("[data-a=home]")){ S.day=null; S.date=null; renderHome(); } };
