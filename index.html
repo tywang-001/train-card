@@ -590,16 +590,18 @@ var PLAN = {
 };
 
 var ORDER = ["A","B","C","D","E","L"];
-/* 固定周表：周一 A、周二 B、周三 轻日、周四 C、周五 D、周六 E、周日 轻日 */
-var WEEKPLAN = ["L","A","B","L","C","D","E"];   /* 下标 = new Date().getDay()，0 是周日 */
+/* 练的顺序（不是「星期几练哪块」）：A 推 → B 蹲 → 轻 → C 拉 → D 后链 → E 肩臂 → 轻，一轮 7 天，5 硬 + 2 轻。
+   卡片上的「周一/周四」只是参考；排期只认这个顺序和「新一套」的记录，
+   免得换了计划、周中才开始，一上来就被推到半截去。 */
+var CYCLE = ["A","B","L","C","D","E","L"];
 
 /* ================= 存储 ================= */
-var LS_LOAD="sm_loads_v1", LS_HIS="sm_his_v1", LS_CFG="sm_cfg_v1", LS_SESS="sm_sess_v1", LS_NOTE="sm_notes_v1";
+var LS_LOAD="sm_loads_v1", LS_HIS="sm_his_v1", LS_CFG="sm_cfg_v1", LS_SESS="sm_sess_v1", LS_NOTE="sm_notes_v1", LS_CYC="sm_cyc_v1";
 function rd(k,d){ try{ var v=localStorage.getItem(k); return v?JSON.parse(v):d; }catch(e){ return d; } }
 function wr(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } }
 
 var DEF = { mode:"down", theme:"auto", bg:"", bgBlur:0, veil:0.28, glassA:0.72, glassBlur:16, fit:"cover" };
-var VER = "v5.9 · 2026-11-19";
+var VER = "v5.11 · 2026-11-19";
 var cfg = rd(LS_CFG, {});
 for(var k in DEF){ if(cfg[k]===undefined) cfg[k]=DEF[k]; }
 var loads = rd(LS_LOAD, {});
@@ -614,6 +616,9 @@ var loads = rd(LS_LOAD, {});
   }
 })();
 var his = rd(LS_HIS, []);
+/* 顺序游标：下一个该练 CYCLE 里的第几个。0 = A，新装 / 清空后从这里开始 */
+var cyc = rd(LS_CYC, 0);
+if(typeof cyc !== "number" || cyc < 0 || cyc >= CYCLE.length) cyc = 0;
 var notes = rd(LS_NOTE, {});
 
 /* 这台浏览器到底能不能存数据（用 file:// 打开时，有的浏览器会直接禁掉 localStorage） */
@@ -793,15 +798,14 @@ function dayDoneSets(){
 }
 
 /* ================= 首页 ================= */
-function weekCount(){
-  var now=new Date(), d=now.getDay();
-  var mon=new Date(now); mon.setDate(now.getDate()-(d===0?6:d-1)); mon.setHours(0,0,0,0);
-  var n={};
-  his.forEach(function(h){ if(new Date(h.ts)>=mon) n[h.day]=true; });
-  return Object.keys(n).length;
+/* 新一套里练过多少天（旧记录不算，所以换计划后从 0 起） */
+function newDays(){
+  var m = {};
+  newHis().forEach(function(h){ if(h && h.date) m[h.date] = 1; });
+  return Object.keys(m).length;
 }
 function lastOf(day){
-  for(var i=his.length-1;i>=0;i--){ if(his[i].day===day) return his[i]; }
+  for(var i=his.length-1;i>=0;i--){ if(recDay(his[i])===day) return his[i]; }
   return null;
 }
 /* ================= 主界面 · 四栏 ================= */
@@ -864,6 +868,18 @@ function dateKey(d){
   var p = String(d || "").split("-");
   return (parseInt(p[0],10)||0)*10000 + (parseInt(p[1],10)||0)*100 + (parseInt(p[2],10)||0);
 }
+/* 换成 v5.9 之后，之前练的都算「上一套」：记录一条不删，
+   历史、日历、重量全留着，但排期和「新一套已练」从新一套重新算。
+   另外旧计划里的 D 是「肩 + 手臂」，对应新计划的 E，标签和排期都按 E 认。 */
+var GEN = "2026-11-19";
+function recDay(h){
+  if(!h || !h.day) return "";
+  return (h.day === "D" && dateKey(h.date) < dateKey(GEN)) ? "E" : h.day;
+}
+function newHis(){
+  var g = dateKey(GEN);
+  return his.filter(function(h){ return h && h.date && dateKey(h.date) >= g; });
+}
 /* 最近一次完成的训练（按日期，其次按时刻） */
 function latestHis(){
   var best = null, bk = -1, bt = -1;
@@ -874,28 +890,32 @@ function latestHis(){
   });
   return best;
 }
-/* 今天已经练过的日子：{A:true, C:true} */
+/* 今天已经练过的日子：{A:true, C:true}（只认新一套） */
 function todayDone(){
   var t = todayStr(), m = {};
-  his.forEach(function(h){ if(h && h.date === t && h.day) m[h.day] = true; });
+  newHis().forEach(function(h){ if(h && h.date === t) m[recDay(h)] = true; });
   return m;
 }
-/* 排期按固定周表：今天是星期几就推哪天（周一 A … 周六 E，周三/周日 轻日）；
-   今天已经练过表上这天，就往后找最近一个还没练的；
-   想临时换顺序，直接点下面对应那天卡片就行。 */
+/* 排期：按 CYCLE 顺序走，游标记着下一个该练哪个；新一套还没开张时一律从 A 开始。
+   跳过某个不练也没关系——练了哪一个，游标就挪到它的下一个。
+   想临时换顺序，直接点下面那张卡片。 */
 function suggestDay(){
   var td = todayDone();
   var last = latestHis();
-  var d = (new Date()).getDay();
-  var pick = WEEKPLAN[d];
-  if(td[pick]){
-    pick = null;
-    for(var i = 1; i <= 7; i++){
-      var k = WEEKPLAN[(d + i) % 7];
-      if(!td[k]){ pick = k; break; }
+  var i = newHis().length ? cyc : 0;   /* 新一套还是空的：第一练就是 A */
+  var pick = CYCLE[i], step = 0;
+  while(td[pick] && step < CYCLE.length){ step++; pick = CYCLE[(i + step) % CYCLE.length]; }
+  return { day: pick, doneToday: td, last: last };
+}
+/* 练完一个，游标挪到它的下一个（从当前位置往后找第一次出现） */
+function cycNext(day){
+  for(var o = 0; o < CYCLE.length; o++){
+    if(CYCLE[(cyc + o) % CYCLE.length] === day){
+      cyc = (cyc + o + 1) % CYCLE.length;
+      wr(LS_CYC, cyc);
+      return;
     }
   }
-  return { day: pick, doneToday: td, last: last };
 }
 
 /* ---- 第 1 栏：开始健身 ---- */
@@ -906,7 +926,7 @@ function renderFit(){
   var h = "";
   var doneNames = ORDER.filter(function(k){ return td[k]; })
                        .map(function(k){ return PLAN[k].name; }).join("、");
-  h += '<div class="sub" style="margin:12px 0 12px">今天 ' + todayStr() + ' · 本周已练 ' + weekCount() + ' 天'
+  h += '<div class="sub" style="margin:12px 0 12px">今天 ' + todayStr() + ' · 新一套已练 ' + newDays() + ' 天'
      + (doneNames ? ' · 今天已完成 ' + doneNames : ' · 今天还没练')
      + (pick ? ' · 下一次 ' + PLAN[pick].name : ' · 这一轮练完了') + '</div>';
 
@@ -953,13 +973,15 @@ function renderFit(){
              : '这个浏览器存不住数据，练完先到「设置」里导出，下次可以导入找回来')
      + '</div>'
      + '<div class="tiny muted" style="margin-top:8px;line-height:1.7">'
-     + '排期规则：周一到周六固定 A→B→轻→C→D→E，周日轻日；今天练过的不会再标「下次」；'
-     + '某天跳过了就照表练，或直接点那天开始。</div>'
+     + '排期规则：按 A→B→轻→C→D→E→轻 的顺序走，练了哪个就推下一个，跳过的自动略过；'
+     + '卡片上的「周X」只是参考，不算排期依据。想临时换顺序就直接点那张卡片。</div>'
      + '<div class="tiny muted" style="margin-top:8px;line-height:1.7">'
      + '递进：规定的次数全做到、最后一组还剩 1 下力气（RIR 1）→ 下次先加次数，次数顶满再加重量'
      + '（哑铃 +2.5/只，杠铃 +5，器械 +5）。<br>'
      + '减载：每练满 5 周，用一周把重量降 10%、组数砍到 2/3，之后重新往上加。<br>'
-     + '热身不算在组数里，但每次都必须做：单车 5 分钟 + 弹力带外旋 2×15 + 主项递增 2–3 组。</div>';
+     + '热身不算在组数里，但每次都必须做：单车 5 分钟 + 弹力带外旋 2×15 + 主项递增 2–3 组。<br>'
+     + '记录：换计划之前练的都算「上一套」——一条没删，历史、日历、重量都还在，'
+     + '但「新一套已练」和下次排期从 11-19 这一套重新算，第一练是 A · 上肢推。</div>';
 
   var box=$("#home"); box.innerHTML=h; box.style.display="block";
   box.onclick=function(e){
@@ -978,7 +1000,7 @@ function calMap(){
     var k = h.date;
     if(!map[k]) map[k] = { n:0, sets:0, letters:[], items:[] };
     map[k].n++; map[k].sets += (h.sets||0);
-    map[k].letters.push(h.day);
+    map[k].letters.push(recDay(h));
     map[k].items.push(h);
   });
   return map;
@@ -1036,7 +1058,7 @@ function renderCalendar(){
        +   '<div style="font-weight:700;font-size:16px">'+SELKEY+'</div>';
     if(sel){
       sel.items.forEach(function(x){
-        h += '<div class="small" style="margin-top:7px">'+PLAN[x.day].name+' · <b>'+x.sets+'</b>/'+x.total+' 组</div>';
+        h += '<div class="small" style="margin-top:7px">'+PLAN[recDay(x) || x.day].name+' · <b>'+x.sets+'</b>/'+x.total+' 组</div>';
       });
     } else {
       h += '<div class="small muted" style="margin-top:7px">这天没有训练记录</div>';
@@ -1492,7 +1514,7 @@ function initSplash(){
 
 function showHistory(){
   if(!his.length){ toast("还没有记录"); return; }
-  var txt = his.slice(-14).map(function(h){ return h.date+"  "+PLAN[h.day].name+"  "+h.sets+"/"+h.total+" 组"; }).join("\n");
+  var txt = his.slice(-14).map(function(h){ return h.date+"  "+PLAN[recDay(h)].name+"  "+h.sets+"/"+h.total+" 组"; }).join("\n");
   alert("最近记录（共 "+his.length+" 次）：\n\n"+txt);
 }
 function exportData(){
@@ -1665,6 +1687,7 @@ function finishSession(){
   }
   if(!merged) his.push({ ts:Date.now(), date:dt, day:S.day, sets:dn, total:total });
   wr(LS_HIS,his);
+  cycNext(S.day);
   clearSess(); closeRest(); dropAwake();
 
   var dayName = PLAN[S.day].name;
