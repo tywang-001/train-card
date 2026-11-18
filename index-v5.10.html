@@ -1,0 +1,1805 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#f2f1ec" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#141619" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>训练卡 · 五练</title>
+<style>
+  :root{
+    --bg:#f2f1ec;
+    --ink:#1c1e22;
+    --muted:#6e727a;
+    --line:rgba(0,0,0,.10);
+    --glassRGB:255,255,255;
+    --veilRGB:242,241,236;
+    --glassA:.72;
+    --veilA:.28;
+    --glassBlur:16px;
+    --bgblur:0px;
+    --bgfit:cover;
+    --zebra:rgba(0,0,0,.035);
+    --main-bg:#1c1e22; --main-ink:#fff;
+    --inputbg:rgba(255,255,255,.72);
+    --ok:#189664; --good:#127a58;
+    --a:#2f6fed; --b:#d85637; --c:#189664; --d:#7658e8;
+    --tsh:0 1px 2px rgba(255,255,255,.85);
+  }
+  html[data-theme="dark"]{
+    --bg:#141619;
+    --ink:#eef0f4;
+    --muted:#98a0ab;
+    --line:rgba(255,255,255,.12);
+    --glassRGB:30,34,40;
+    --veilRGB:8,10,14;
+    --zebra:rgba(255,255,255,.05);
+    --main-bg:#eef0f4; --main-ink:#141619;
+    --inputbg:rgba(255,255,255,.10);
+    --ok:#22b57a; --good:#4ecb9b;
+    --a:#5b8dff; --b:#ff7a55; --c:#22b57a; --d:#9a83ff;
+    --tsh:0 1px 3px rgba(0,0,0,.62);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  html{background:var(--bg)}
+  body{
+    background:var(--bg); color:var(--ink); min-height:100vh;
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    font-size:17px; line-height:1.5; -webkit-text-size-adjust:100%;
+  }
+
+  /* 背景图：原图清晰铺满，虚化程度由滑块控制（默认 0） */
+  body.hasbg{background:transparent}
+  body.hasbg::before{
+    content:""; position:fixed; inset:-2px; z-index:-2;
+    background-image:var(--bgimg);
+    background-position:center center;
+    background-repeat:no-repeat;
+    background-size:var(--bgfit);
+    filter:blur(var(--bgblur));
+  }
+  body.hasbg::after{
+    content:""; position:fixed; inset:0; z-index:-1;
+    background:rgba(var(--veilRGB), var(--veilA));
+  }
+
+  .wrap{max-width:620px;margin:0 auto;padding:18px 16px 130px}
+
+  /* 有背景图时，不在卡片里的文字给一层薄玻璃底，保证任何照片上都能读 */
+  body.hasbg #home > h1,
+  body.hasbg #home > .sub,
+  body.hasbg #home > .tiny.muted,
+  body.hasbg .exname,
+  body.hasbg .meta{
+    background:rgba(var(--glassRGB), calc(var(--glassA) * .62));
+    -webkit-backdrop-filter:blur(10px) saturate(140%);
+    backdrop-filter:blur(10px) saturate(140%);
+    border-radius:12px; padding:3px 14px; margin-left:-14px;
+    display:block; width:fit-content; text-shadow:var(--tsh);
+  }
+  body.hasbg .meta{display:inline-flex;padding:6px 14px;border-radius:999px;gap:12px}
+  h1{font-size:26px;margin:0 0 4px}
+  h2{font-size:20px;margin:0}
+  .sub{color:var(--muted);font-size:14px}
+  .row{display:flex;gap:10px;align-items:center}
+  .grow{flex:1}
+  .muted{color:var(--muted)}
+  .small{font-size:14px}
+  .tiny{font-size:12.5px}
+
+  .glass{
+    background:rgba(var(--glassRGB), var(--glassA));
+    -webkit-backdrop-filter:blur(var(--glassBlur)) saturate(140%);
+    backdrop-filter:blur(var(--glassBlur)) saturate(140%);
+    border:1px solid var(--line);
+  }
+
+  .daycard{display:flex;align-items:stretch;margin-bottom:12px;border-radius:16px;overflow:hidden;cursor:pointer}
+  .daycard .bar{width:8px;flex:0 0 8px}
+  .daycard .body{padding:14px 16px;flex:1;min-width:0}
+  .daycard .t{font-weight:700;font-size:19px;display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+  .daycard .cnt{font-size:14px;color:var(--muted);font-weight:400;white-space:nowrap}
+  .pill{display:inline-block;font-size:12px;padding:3px 9px;border-radius:999px;
+    background:rgba(47,111,237,.16);color:var(--a);margin-left:8px;vertical-align:middle}
+  .pill-done{background:rgba(58,190,130,.18);color:#37c489}
+
+  button{font:inherit;color:inherit;
+    background:rgba(var(--glassRGB), calc(var(--glassA) * .78));
+    border:1px solid var(--line);border-radius:12px;padding:12px 14px;min-height:48px;cursor:pointer;
+    -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px)}
+  button:active{transform:scale(.985)}
+  button:disabled{opacity:.4}
+  .btn-main{background:var(--main-bg);color:var(--main-ink);border-color:transparent;font-weight:600;
+    -webkit-backdrop-filter:none; backdrop-filter:none}
+  .btn-soft{background:rgba(var(--glassRGB), calc(var(--glassA) * .6))}
+  .btn-sm{padding:8px 12px;min-height:40px;font-size:15px;border-radius:10px}
+
+  .resume{margin-bottom:14px;border-radius:16px;padding:14px 16px;display:flex;gap:12px;
+    align-items:center;border-color:rgba(47,111,237,.35)}
+  .resume .t{font-weight:700}
+
+  .top{position:sticky;top:0;z-index:5;padding:10px 0 8px;background:var(--bg);border-bottom:1px solid var(--line)}
+  body.hasbg .top{background:rgba(var(--glassRGB), var(--glassA));
+    -webkit-backdrop-filter:blur(var(--glassBlur)) saturate(140%);
+    backdrop-filter:blur(var(--glassBlur)) saturate(140%)}
+  .bar-outer{height:6px;background:var(--zebra);border-radius:99px;overflow:hidden;margin-top:8px}
+  .bar-inner{height:100%;width:0;transition:width .25s;background:var(--a)}
+  .exname{font-size:26px;font-weight:800;letter-spacing:.5px;margin:2px 0 6px}
+  .meta{display:flex;gap:14px;flex-wrap:wrap;font-size:15px;color:var(--muted);align-items:center}
+  .dot{width:4px;height:4px;border-radius:99px;background:var(--muted);display:inline-block;opacity:.5}
+
+  .cuebox{border-radius:16px;padding:14px 16px;margin:14px 0}
+  .cuebox .lbl{font-size:13px;font-weight:700;letter-spacing:.5px;color:var(--muted);margin-bottom:6px}
+  .cue{font-size:17px;line-height:1.65}
+  .tell{margin-top:12px;padding-top:12px;border-top:1px dashed var(--line);
+    color:var(--good);font-size:16px;line-height:1.6}
+
+  .sets{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:10px;margin:14px 0 6px}
+  .setbtn{min-height:64px;font-size:16px;font-weight:600;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:2px;transition:opacity .15s}
+  .setbtn.on{background:var(--ok);border-color:transparent;color:#fff;
+    -webkit-backdrop-filter:none; backdrop-filter:none}
+  .setbtn .n{font-size:13px;font-weight:400;opacity:.75}
+  body.resting .setbtn:not(.on){opacity:.35}
+
+  .weightrow{display:flex;gap:10px;align-items:center;margin:12px 0 4px;flex-wrap:wrap}
+  .weightrow input{font:inherit;width:130px;padding:11px 12px;border:1px solid var(--line);
+    border-radius:12px;background:var(--inputbg);color:var(--ink);text-align:center}
+  .nav{display:flex;gap:10px;margin-top:18px}
+  .nav button{flex:1;min-height:56px}
+  .nav .nx{font-size:15.5px;line-height:1.3;padding:10px}
+  .vlink{display:inline-flex;align-items:center;gap:6px;font-size:15px;color:var(--a);
+    text-decoration:none;border:1px solid rgba(47,111,237,.3);background:rgba(47,111,237,.12);
+    padding:9px 13px;border-radius:99px}
+  /* 有背景图时，演示链接和重量行也垫一层，别让照片把字吃掉 */
+  body.hasbg .vlink{background:rgba(var(--glassRGB), calc(var(--glassA) * .78));
+    border-color:rgba(var(--glassRGB), calc(var(--glassA) * .9));
+    -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+  body.hasbg .weightrow{background:rgba(var(--glassRGB), calc(var(--glassA) * .62));
+    -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+    border-radius:16px;padding:8px 14px;width:fit-content}
+
+  #restbar{position:fixed;left:0;right:0;bottom:0;z-index:20;display:none;
+    background:rgba(16,18,22,.94);color:#fff;padding:12px 16px calc(12px + env(safe-area-inset-bottom));
+    border-radius:20px 20px 0 0;box-shadow:0 -10px 30px rgba(0,0,0,.28);
+    -webkit-backdrop-filter:blur(18px); backdrop-filter:blur(18px)}
+  #restbar.on{display:block}
+  html[data-theme="dark"] #restbar{background:rgba(36,40,47,.96);border-top:1px solid rgba(255,255,255,.08)}
+  #restbar .r{display:flex;align-items:center;gap:12px}
+  #rtime{font-size:40px;font-weight:800;font-variant-numeric:tabular-nums;min-width:118px}
+  #rlabel{font-size:12.5px;opacity:.7}
+  #restbar button{background:rgba(255,255,255,.13);border-color:rgba(255,255,255,.18);color:#fff;
+    min-height:44px;padding:8px 12px;font-size:15px}
+
+  /* 设置面板 */
+  #sheet{position:fixed;inset:0;z-index:50;display:none;background:rgba(0,0,0,.32)}
+  #sheet.on{display:block}
+  .sheet-inner{position:absolute;left:0;right:0;bottom:0;border-radius:22px 22px 0 0;
+    padding:18px 18px calc(20px + env(safe-area-inset-bottom));
+    background:rgba(var(--glassRGB), calc(var(--glassA) + .1));
+    -webkit-backdrop-filter:blur(24px) saturate(150%);
+    backdrop-filter:blur(24px) saturate(150%);
+    border-top:1px solid var(--line);max-height:88vh;overflow:auto}
+  .sheet-inner h3{margin:0 0 4px;font-size:19px}
+  .seg{display:flex;gap:8px;margin:10px 0 14px}
+  .seg button{flex:1;min-height:44px;font-size:15px}
+  .seg button.act{background:var(--main-bg);color:var(--main-ink);border-color:transparent}
+  .divider{height:1px;background:var(--line);margin:14px 0}
+  .sl{display:flex;justify-content:space-between;align-items:baseline;margin:16px 0 2px}
+  .sl .v{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+  input[type=range]{width:100%;height:34px;accent-color:var(--a);background:transparent;margin:0}
+
+  .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:100px;background:rgba(16,18,22,.94);
+    color:#fff;padding:11px 18px;border-radius:99px;font-size:15px;opacity:0;transition:opacity .2s;
+    pointer-events:none;z-index:60;max-width:88vw;text-align:center}
+  .toast.on{opacity:.96}
+
+  /* ============ 书法（内置开源毛笔字体 Ma Shan Zheng 子集，离线可用） ============ */
+  @font-face{
+    font-family:"Ink";
+    src:url(data:font/woff2;base64,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) format("woff2");
+    font-weight:400; font-style:normal; font-display:block;
+  }
+  .ink{font-family:"Ink","STXingkai","华文行楷","STKaiti","KaiTi","楷体",serif;
+    color:#111; -webkit-font-smoothing:antialiased}
+
+  /* ============ 开屏：竖排书法 ============ */
+  #splash{
+    position:fixed; inset:0; z-index:80; background:#fbfaf6;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    transform-origin:left center; perspective:1800px;
+    transition:transform .9s cubic-bezier(.55,.02,.28,1), opacity .9s ease;
+    -webkit-tap-highlight-color:transparent;
+  }
+  #splash::after{ /* 翻页时的阴影 */
+    content:""; position:absolute; inset:0; pointer-events:none; opacity:0;
+    background:linear-gradient(to left, rgba(0,0,0,.35), rgba(0,0,0,0) 32%);
+    transition:opacity .9s ease;
+  }
+  #splash.turn{transform:rotateY(-102deg) translateX(-8%) scale(.99); opacity:.2; pointer-events:none}
+  #splash.turn::after{opacity:1}
+
+  .splash-stage{position:relative; display:flex; align-items:flex-start; gap:22px}
+  .vert{
+    writing-mode:vertical-rl; text-orientation:upright;
+    font-size:clamp(112px, 27vw, 210px); line-height:1.02; letter-spacing:.02em;
+    font-weight:400; color:#0d0d0d;
+    filter:url(#inkedge);
+    -webkit-mask-image:linear-gradient(to bottom, #000 0%, #000 62%, rgba(0,0,0,.72) 88%, rgba(0,0,0,.9) 100%);
+    mask-image:linear-gradient(to bottom, #000 0%, #000 62%, rgba(0,0,0,.72) 88%, rgba(0,0,0,.9) 100%);
+  }
+  .seal{
+    position:relative;
+    align-self:flex-end; width:88px; height:88px; flex:0 0 88px;
+    background:#b4242b; color:#fbfaf6; border-radius:3px; transform:rotate(-3.5deg);
+    display:grid; grid-template-columns:1fr 1fr; align-content:center; justify-items:center;
+    font-family:"Ink","STKaiti","KaiTi",serif; font-size:27px; line-height:1.08;
+    box-shadow:0 3px 12px rgba(150,20,25,.30); filter:url(#inkedge);
+    padding:9px 4px; margin-bottom:16px;
+  }
+  .seal::before{
+    content:""; position:absolute; inset:4px; border:2px solid rgba(251,250,246,.82);
+    border-radius:2px; pointer-events:none;
+  }
+  .seal span{display:block}
+  .splash-foot{margin-top:34px; display:flex; flex-direction:column; align-items:center; gap:8px}
+  .pinyin{font-family:-apple-system,"Helvetica Neue",Arial,sans-serif;
+    font-size:14px; letter-spacing:.55em; text-indent:.55em; color:#5b5b57; font-weight:600}
+  .splash-tip{position:absolute; bottom:calc(30px + env(safe-area-inset-bottom));
+    font-size:13px; color:#8b8b84; letter-spacing:.18em; animation:bob 2.2s ease-in-out infinite}
+  @keyframes bob{0%,100%{transform:translateY(0); opacity:.65}50%{transform:translateY(-6px); opacity:1}}
+
+  /* ============ 页头书法小句 ============ */
+  .hdr{padding:16px 2px 4px}
+  .hdr .q{font-family:"Ink","STXingkai","STKaiti","KaiTi",serif;
+    font-size:17px; line-height:1.5; color:var(--ink); letter-spacing:.06em}
+  .hdr .q .em{color:#b4242b}
+
+  /* ============ 底部四栏 ============ */
+  #tabbar{
+    position:fixed; left:0; right:0; bottom:0; z-index:30; display:flex;
+    padding:6px 6px calc(6px + env(safe-area-inset-bottom));
+    background:rgba(var(--glassRGB), calc(var(--glassA) + .06));
+    -webkit-backdrop-filter:blur(var(--glassBlur)) saturate(150%);
+    backdrop-filter:blur(var(--glassBlur)) saturate(150%);
+    border-top:1px solid var(--line);
+  }
+  #tabbar button{
+    flex:1; background:none; border:0; min-height:50px; padding:5px 0 3px;
+    display:flex; flex-direction:column; align-items:center; gap:3px;
+    font-size:11.5px; color:var(--muted); -webkit-backdrop-filter:none; backdrop-filter:none;
+  }
+  #tabbar button.act{color:var(--ink); font-weight:700}
+  #tabbar svg{width:21px; height:21px; fill:none; stroke:currentColor; stroke-width:1.7;
+    stroke-linecap:round; stroke-linejoin:round}
+  body.in-session #tabbar, body.in-session .hdr{display:none}
+  body.in-session .wrap{padding-bottom:150px}
+
+  /* ============ 训练记录 · 日历 ============ */
+  .calhead{display:flex; align-items:center; gap:10px; margin:14px 0 10px}
+  .calhead .m{font-size:18px; font-weight:700; font-variant-numeric:tabular-nums}
+  .calgrid{display:grid; grid-template-columns:repeat(7,1fr); gap:6px}
+  .calgrid .wd{font-size:11.5px; color:var(--muted); text-align:center; padding-bottom:2px}
+  .calcell{position:relative; aspect-ratio:1/1; border-radius:9px; display:flex;
+    flex-direction:column; align-items:center; justify-content:center;
+    font-size:13px; color:var(--muted); background:var(--zebra); border:1px solid transparent}
+  .calcell.empty{background:none}
+  .calcell.has{color:var(--ink); font-weight:700}
+  .calcell.today{border-color:var(--ink)}
+  .calcell .dm{font-size:9.5px; line-height:1; margin-top:2px; opacity:.85}
+  .calcell.sel{outline:2px solid var(--a); outline-offset:-2px}
+  .legend{display:flex; gap:12px; align-items:center; margin:12px 0 0; font-size:12px; color:var(--muted)}
+  .legend i{width:11px; height:11px; border-radius:3px; display:inline-block; margin-right:4px}
+  .calday{margin-top:14px}
+
+  /* ============ 训练照片 ============ */
+  .phsec{margin-top:12px; padding-top:12px; border-top:1px dashed var(--line)}
+  .phtop{display:flex; align-items:center; justify-content:space-between; margin-bottom:8px}
+  .phgrid{display:grid; grid-template-columns:repeat(4, 1fr); gap:8px}
+  .phitem{position:relative; aspect-ratio:1/1; border-radius:10px; overflow:hidden;
+    background:rgba(127,127,127,.14); cursor:pointer}
+  .phitem img{width:100%; height:100%; object-fit:cover; display:block}
+  .phempty{grid-column:1/-1; font-size:13px; color:var(--muted); padding:6px 2px}
+  .phbtns{display:flex; gap:8px; margin-top:10px}
+  .phtip{margin-top:7px; line-height:1.55}
+  .backrow{display:flex; flex-wrap:wrap; gap:8px; margin-top:8px}
+
+  #photoView{position:fixed; inset:0; z-index:90; display:none; flex-direction:column;
+    background:rgba(6,7,9,.985); color:#fff}
+  #photoView.on{display:flex}
+  #photoView .pbar{display:flex; align-items:center; gap:10px;
+    padding:calc(10px + env(safe-area-inset-top)) 14px 6px; font-size:13px; color:rgba(255,255,255,.75)}
+  #photoView .pbar .grow{flex:1}
+  #photoView .pbody{flex:1; display:flex; align-items:center; justify-content:center; padding:6px 10px; overflow:hidden}
+  #photoView img{max-width:100%; max-height:100%; object-fit:contain; border-radius:8px}
+  #photoView .pnav{display:flex; gap:10px; justify-content:center; padding:12px 0 10px}
+  #photoView button{font:inherit; font-size:14px; color:#fff; border-radius:12px; min-height:44px;
+    padding:0 16px; border:1px solid rgba(255,255,255,.22); background:rgba(255,255,255,.12)}
+  #photoView button:disabled{opacity:.35}
+  #photoView button.danger{color:#ffb4a8; border-color:rgba(255,120,90,.45)}
+  #photoView .ptip{text-align:center; font-size:12px; color:rgba(255,255,255,.5);
+    padding:0 20px calc(14px + env(safe-area-inset-bottom))}
+
+  /* ============ 心得 ============ */
+  .notebox{width:100%; min-height:150px; padding:14px; border-radius:16px; font:inherit;
+    line-height:1.65; color:var(--ink); border:1px solid var(--line);
+    background:rgba(var(--glassRGB), calc(var(--glassA) * .8)); resize:vertical}
+  .notebox:focus{outline:2px solid rgba(47,111,237,.45); outline-offset:1px}
+  .noterow{padding:13px 15px; border-radius:14px; margin-top:10px; cursor:pointer}
+  .noterow .d{font-size:12.5px; color:var(--muted); margin-bottom:3px}
+  .noterow .x{font-size:15px; line-height:1.5; display:-webkit-box; -webkit-line-clamp:2;
+    -webkit-box-orient:vertical; overflow:hidden}
+
+  /* ============ 设置列表 ============ */
+  .setlist{margin-top:12px; border-radius:16px; overflow:hidden}
+  .setrow{display:flex; align-items:center; gap:12px; padding:15px 16px; cursor:pointer;
+    border-bottom:1px solid var(--line)}
+  .setrow:last-child{border-bottom:0}
+  .setrow .k{flex:1; font-size:16px}
+  .setrow .v{font-size:14px; color:var(--muted)}
+  .setrow .ar{color:var(--muted); font-size:16px}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <filter id="inkedge" x="-14%" y="-14%" width="128%" height="128%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.013 0.019" numOctaves="4" seed="9" result="n"/>
+    <feDisplacementMap in="SourceGraphic" in2="n" scale="7.5" xChannelSelector="R" yChannelSelector="G"/>
+  </filter>
+</svg>
+
+<div id="splash">
+  <div class="splash-stage">
+    <div class="vert ink">健历</div>
+    <div class="seal"><span>健</span><span>历</span><span>自</span><span>强</span></div>
+  </div>
+  <div class="splash-foot"><div class="pinyin">JIANLI</div></div>
+  <div class="splash-tip">上滑或点击 · 翻页</div>
+</div>
+
+<div class="wrap">
+  <header class="hdr">
+    <div class="q ink">变强只有一种方式：<br><span class="em">持续做事</span> ＋ <span class="em">持续解决问题</span></div>
+  </header>
+  <main id="home"></main>
+  <main id="cal" style="display:none"></main>
+  <main id="note" style="display:none"></main>
+  <main id="set" style="display:none"></main>
+  <main id="session" style="display:none"></main>
+</div>
+
+<nav id="tabbar">
+  <button data-tab="fit" class="act">
+    <svg viewBox="0 0 24 24"><path d="M3 10.5v3M5.5 8v8M8 10.5v3M16 10.5v3M18.5 8v8M21 10.5v3M8 12h8"/></svg>
+    <span>开始健身</span>
+  </button>
+  <button data-tab="cal">
+    <svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M8 3v4M16 3v4M3.5 10.5h17"/></svg>
+    <span>训练记录</span>
+  </button>
+  <button data-tab="note">
+    <svg viewBox="0 0 24 24"><path d="M4.5 19.5l4-.9L19 8.1a2 2 0 0 0-2.8-2.8L5.4 15.5l-.9 4z"/><path d="M14.5 7l2.8 2.8"/></svg>
+    <span>每日心得</span>
+  </button>
+  <button data-tab="set">
+    <svg viewBox="0 0 24 24"><path d="M4 7.5h10M18 7.5h2M4 16.5h2M10 16.5h10"/><circle cx="16" cy="7.5" r="2"/><circle cx="8" cy="16.5" r="2"/></svg>
+    <span>设置</span>
+  </button>
+</nav>
+
+<div id="restbar">
+  <div class="r">
+    <div>
+      <div id="rtime">0:00</div>
+      <div id="rlabel">休息</div>
+    </div>
+    <div class="grow"></div>
+    <button data-r="add">+15s</button>
+    <button data-r="sub">-15s</button>
+    <button data-r="skip">跳过</button>
+  </div>
+</div>
+
+<div id="photoView">
+  <div class="pbar">
+    <div id="pvbar">1 / 1</div>
+    <div class="grow"></div>
+    <button data-pvdel="1" class="danger">删除</button>
+    <button data-pvclose="1">关闭</button>
+  </div>
+  <div class="pbody"><img id="pvimg" alt=""></div>
+  <div class="pnav">
+    <button id="pvprev">上一张</button>
+    <button id="pvnext">下一张</button>
+  </div>
+  <div class="ptip">长按照片可以「存储到照片」，相册里也存一份</div>
+</div>
+
+<div id="sheet">
+  <div class="sheet-inner">
+    <h3>外观</h3>
+    <div class="sub">拖动即时生效，存在这台手机上</div>
+    <div class="divider"></div>
+
+    <div class="small muted">主题</div>
+    <div class="seg" id="seg-theme">
+      <button data-th="auto">跟随系统</button>
+      <button data-th="light">浅色</button>
+      <button data-th="dark">深色</button>
+    </div>
+
+    <div class="small muted">背景图</div>
+    <div class="seg">
+      <button id="btn-bg" class="btn-soft">选择图片</button>
+      <button id="btn-bgclear" class="btn-soft">清除背景</button>
+    </div>
+    <div class="seg" id="seg-fit">
+      <button data-fit="cover">铺满屏幕</button>
+      <button data-fit="contain">看完整张</button>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="sl"><span class="small">背景虚化</span><span class="v" id="v-bgblur">0 px</span></div>
+    <input type="range" id="r-bgblur" min="0" max="30" step="1">
+
+    <div class="sl"><span class="small">背景压暗</span><span class="v" id="v-veil">28 %</span></div>
+    <input type="range" id="r-veil" min="0" max="70" step="2">
+
+    <div class="sl"><span class="small">卡片不透明</span><span class="v" id="v-glass">72 %</span></div>
+    <input type="range" id="r-glass" min="20" max="96" step="2">
+
+    <div class="sl"><span class="small">卡片磨砂</span><span class="v" id="v-gblur">16 px</span></div>
+    <input type="range" id="r-gblur" min="0" max="30" step="1">
+
+    <div class="divider"></div>
+    <button id="btn-sheet-done" class="btn-main" style="width:100%">好了</button>
+    <input type="file" id="filebg" accept="image/*" style="display:none">
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ================= 计划数据 ================= */
+function V(q){ return "https://search.bilibili.com/all?keyword=" + encodeURIComponent(q); }
+
+var PLAN = {
+  A: { name:"A · 上肢推", sub:"周一 · 胸主导 · 约 50 分钟", hex:"var(--a)", items:[
+    { id:"dbp", nm:"哑铃卧推", sets:4, reps:"6–8", load:"22.5/只", rest:150,
+      cue:"先单车 5 分钟 + 弹力带外旋 2×15；空手→15→20 各 1 组递增再上工作重量；肩胛后下压住不松；上臂与躯干约 45°",
+      tell:"胸外侧拉伸感、推的时候胸先吃力；前束不先累、肩不响", vid:V("哑铃卧推 正确姿势") },
+    { id:"inc", nm:"上斜哑铃推 30°", sets:3, reps:"8–10", load:"15–17.5", rest:90,
+      cue:"凳 30° 不是 45°；下到锁骨下方一点；别耸肩去够",
+      tell:"锁骨下面那块（上胸）酸胀", vid:V("上斜哑铃卧推 30度") },
+    { id:"row", nm:"T 杆划船", sets:4, reps:"8–10", load:"25–30", rest:120,
+      cue:"肩胛先动、再拉手肘；身不后仰；拉到腹或胸下沿",
+      tell:"肩胛之间 + 背阔酸，下背不酸", vid:V("T杆划船 正确姿势") },
+    { id:"lat", nm:"侧平举", sets:4, reps:"12–15", load:"10", rest:60,
+      cue:"小指略高、肘微屈；抬到肩平就停；下放数 2 秒；留 1 下力气，别做到抖",
+      tell:"中束烧，斜方不酸、脖子不紧", vid:V("哑铃侧平举 中束") },
+    { id:"tri", nm:"绳索下压", sets:2, reps:"12–15", load:"20–25", rest:60,
+      cue:"肘固定在体侧不动；下压到底再回；别用身体压",
+      tell:"三头外侧（手臂后面）烧", vid:V("绳索下压 三头") },
+    { id:"fr1", nm:"面拉", sets:2, reps:"15", load:"10–15", rest:60,
+      cue:"绳高于头，往额头方向拉；末端外旋（手背朝上）",
+      tell:"后束 + 肩胛之间发酸", vid:V("面拉 face pull 教学") }
+  ]},
+  B: { name:"B · 下肢蹲", sub:"周二 · 股四主导 · 约 45 分钟", hex:"var(--b)", items:[
+    { id:"sq", nm:"杠铃深蹲", sets:4, reps:"6–8", load:"70 含杆", rest:180,
+      cue:"先单车 5 分钟 + 徒手深蹲 15 下；空杆 10 → 40 做 5 再上重量；屁股先往后坐再往下；膝盖跟脚尖；全程别塌腰",
+      tell:"大腿前侧 + 臀酸，腰不酸、膝盖不内扣", vid:V("杠铃深蹲 新手 教学") },
+    { id:"bss", nm:"保加利亚蹲", sets:2, reps:"8–10/侧", load:"10/手", rest:90,
+      cue:"每手 10 kg；前脚站远一点；下坐时身体略前倾；起身用前脚踩地",
+      tell:"前腿臀 + 腿酸，后腿不酸", vid:V("保加利亚分腿蹲") },
+    { id:"lc", nm:"俯卧腿弯举", sets:3, reps:"10–12", load:"25–30", rest:60,
+      cue:"慢下慢上不甩；顶端停半秒",
+      tell:"腿后侧（腘绳）烧", vid:V("俯卧腿弯举") },
+    { id:"cal", nm:"站姿提踵", sets:2, reps:"12–15", load:"负重 20–30", rest:45,
+      cue:"垫到最高停 1 秒，再慢慢下到底；膝不弯",
+      tell:"小腿肚烧，跟腱不疼", vid:V("站姿提踵 小腿") },
+    { id:"c1", nm:"负重卷腹", sets:3, reps:"10–12", load:"胸抱 5–10", rest:45, core:1,
+      cue:"下背贴地，用腹把胸口卷起来；别用手拉脖子；幅度小、顶端停 1 秒",
+      tell:"上腹收紧到发烫，脖子不酸", vid:V("负重卷腹 腹直肌") }
+  ]},
+  C: { name:"C · 上肢拉", sub:"周四 · 背主导 · 约 55 分钟", hex:"var(--c)", items:[
+    { id:"pd", nm:"对握高位下拉", sets:4, reps:"10–12", load:"45–50", rest:90,
+      cue:"先让肩胛上回旋，再用手肘往下带；胸口微微上提",
+      tell:"腋下外沿 + 背阔外沿酸，二头不先累", vid:V("对握高位下拉") },
+    { id:"cr", nm:"坐姿绳索划船", sets:3, reps:"10–12", load:"35–40", rest:90,
+      cue:"胸挺住不后仰；肘贴身往后拉；末端夹一下再回",
+      tell:"肩胛之间 + 背阔酸", vid:V("坐姿绳索划船") },
+    { id:"inc", nm:"上斜哑铃推 30°", sets:2, reps:"8–10", load:"15–17.5", rest:90,
+      cue:"同 A 日动作，这里只补 2 组，不做到力竭",
+      tell:"上胸有泵感就收", vid:V("上斜哑铃卧推 30度") },
+    { id:"fly", nm:"坐姿夹胸", sets:2, reps:"12–15", load:"40", rest:60,
+      cue:"手臂不完全伸直、肘微屈固定；夹住 1 秒；肩不前顶",
+      tell:"胸中间夹紧感 —— 是夹不是推", vid:V("坐姿夹胸 器械 教学") },
+    { id:"pdn", nm:"直臂下压", sets:3, reps:"12–15", load:"4 片", rest:60,
+      cue:"先扣腕再肩前伸；手臂基本伸直，用背把杆压下去",
+      tell:"背阔外沿酸；肩膀疼就停，换面拉补", vid:V("直臂下压 背阔肌") },
+    { id:"rev", nm:"坐姿反飞鸟", sets:2, reps:"15", load:"5", rest:60,
+      cue:"顶端停 1–2 秒 + 抗阻下放；肘微屈、别耸肩；5 kg 就够",
+      tell:"后束烧，斜方不酸", vid:V("坐姿反飞鸟 后束") },
+    { id:"curl", nm:"哑铃弯举", sets:3, reps:"10–12", load:"10", rest:60,
+      cue:"肘固定不动；下放 2–3 秒",
+      tell:"二头烧，前臂不先累", vid:V("哑铃弯举 教学") },
+    { id:"lat", nm:"侧平举", sets:3, reps:"12–15", load:"10", rest:60,
+      cue:"轻重量、严格；抬到肩平就停；留 1 下力气",
+      tell:"中束烧，脖子不紧", vid:V("哑铃侧平举 中束") }
+  ]},
+  D: { name:"D · 下肢后链", sub:"周五 · 臀腿主导 · 约 45 分钟", hex:"var(--d)", items:[
+    { id:"sq2", nm:"杠铃深蹲（速度组）", sets:3, reps:"5", load:"65–70 含杆", rest:150,
+      cue:"先空杆 10 → 40 做 5；同 B 日动作但轻 5 kg，上下都快，RPE 6–7，不留疲劳",
+      tell:"蹲完还有余力，动作比重量重要", vid:V("杠铃深蹲 速度 训练") },
+    { id:"rdl", nm:"罗马尼亚硬拉", sets:3, reps:"8–10", load:"60–65", rest:120,
+      cue:"膝微屈固定；髋往后推、杆贴腿下到大腿中段；背不圆、别用腰提",
+      tell:"臀 + 大腿后侧被拉开，腰不酸", vid:V("罗马尼亚硬拉 RDL 教学") },
+    { id:"hip", nm:"杠铃臀推", sets:2, reps:"10–12", load:"60–70", rest:90,
+      cue:"上背靠凳边；顶到躯干与地平行就停，别过度顶腰",
+      tell:"臀发力，腿后侧辅助，腰不酸", vid:V("杠铃臀推 臀大肌") },
+    { id:"lc", nm:"俯卧腿弯举", sets:3, reps:"10–12", load:"25–30", rest:60,
+      cue:"慢下慢上不甩；顶端停半秒",
+      tell:"腿后侧（腘绳）烧", vid:V("俯卧腿弯举") },
+    { id:"cal", nm:"站姿提踵", sets:2, reps:"12–15", load:"负重 20–30", rest:45,
+      cue:"垫到最高停 1 秒，再慢慢下到底；膝不弯",
+      tell:"小腿肚烧，跟腱不疼", vid:V("站姿提踵 小腿") },
+    { id:"c2", nm:"悬垂举腿", sets:3, reps:"10–12", load:"自重", rest:60, core:1,
+      cue:"先卷腹再抬腿，别甩；控制下放 2 秒；身体不晃",
+      tell:"下腹收紧，肩不耸", vid:V("悬垂举腿 下腹") }
+  ]},
+  E: { name:"E · 肩 + 手臂", sub:"周六 · 中束主导 · 约 40 分钟", hex:"#c9a227", items:[
+    { id:"lat2", nm:"侧平举", sets:4, reps:"12–15", load:"10", rest:60,
+      cue:"末组可降到 7.5 做 15 下；抬到肩平停，不耸肩",
+      tell:"中束烧，斜方不酸", vid:V("哑铃侧平举 中束") },
+    { id:"ohp", nm:"坐姿哑铃推举", sets:3, reps:"8–10", load:"12.5–15", rest:90,
+      cue:"肘在身体略前方、不完全展开；下到耳朵高度；核心收紧不塌腰",
+      tell:"肩整体酸；腰不酸、肩不响", vid:V("坐姿哑铃推举") },
+    { id:"rfly", nm:"坐姿外旋侧平举", sets:2, reps:"15", load:"5", rest:60,
+      cue:"拇指朝上、肘微屈略高于手；抬到与肩平就停，不耸肩；5 kg 就够",
+      tell:"中束 + 肩后侧外旋肌酸，肩不响", vid:V("坐姿侧平举 外旋 教学") },
+    { id:"fr2", nm:"面拉", sets:2, reps:"15", load:"10–15", rest:60,
+      cue:"绳高于头，往额头方向拉；末端外旋；别耸肩",
+      tell:"后束 + 肩胛之间发酸", vid:V("面拉 face pull 教学") },
+    { id:"ss", nm:"三头 + 二头超级组", sets:3, reps:"12+12", load:"下压20 / 弯举10", rest:60,
+      cue:"下压 12 + 弯举 12，中间不歇；一轮做完再休息",
+      tell:"手臂泵感上来，肘不疼", vid:V("三头二头 超级组") }
+  ]},
+  L: { name:"轻日 · 有氧 + 核心", sub:"周三 / 周日 · 20–30 分钟，不透支", hex:"#8a8f99", items:[
+    { id:"card", nm:"有氧", sets:1, reps:"20–25 分钟", load:"快走/单车", rest:0,
+      cue:"能说话但不能唱歌的强度；不追心率，只求出汗",
+      tell:"结束时觉得还能再来 10 分钟 —— 轻日的标准是不能累", vid:V("低强度有氧 心率区间") },
+    { id:"light1", nm:"死虫", sets:2, reps:"10/侧", load:"自重", rest:45, core:1,
+      cue:"腰贴地；对侧手脚慢慢伸远", tell:"下腹发力", vid:V("死虫式 核心 教学") },
+    { id:"light3", nm:"鸟狗", sets:2, reps:"8/侧", load:"自重", rest:45, core:1,
+      cue:"对侧手脚伸远，腰不塌", tell:"臀 + 腰稳定", vid:V("鸟狗式 核心") },
+    { id:"pal", nm:"Pallof 压", sets:2, reps:"12/侧", load:"2 片", rest:45, core:1,
+      cue:"侧对拉力器，双手前推停 2 秒，身体别被拉转；这是抗旋转，不练侧腹",
+      tell:"侧腰深层收紧，不鼓", vid:V("Pallof press 抗旋转") },
+    { id:"light4", nm:"靠墙天使", sets:2, reps:"10", load:"自重", rest:45,
+      cue:"后脑、上背、臀贴墙；手臂沿墙上下滑，别耸肩",
+      tell:"肩胛之间发酸、腰不拱", vid:V("靠墙天使 圆肩") },
+    { id:"light5", nm:"门框拉伸胸", sets:2, reps:"30 秒/侧", load:"自重", rest:30,
+      cue:"小臂贴门框，身体前移；拉到胸有牵拉感就停，别憋气",
+      tell:"胸大肌被拉开，肩前侧不刺痛", vid:V("门框拉伸 胸大肌") }
+  ]}
+};
+
+var ORDER = ["A","B","C","D","E","L"];
+/* 固定周表：周一 A、周二 B、周三 轻日、周四 C、周五 D、周六 E、周日 轻日 */
+var WEEKPLAN = ["L","A","B","L","C","D","E"];   /* 下标 = new Date().getDay()，0 是周日 */
+
+/* ================= 存储 ================= */
+var LS_LOAD="sm_loads_v1", LS_HIS="sm_his_v1", LS_CFG="sm_cfg_v1", LS_SESS="sm_sess_v1", LS_NOTE="sm_notes_v1";
+function rd(k,d){ try{ var v=localStorage.getItem(k); return v?JSON.parse(v):d; }catch(e){ return d; } }
+function wr(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } }
+
+var DEF = { mode:"down", theme:"auto", bg:"", bgBlur:0, veil:0.28, glassA:0.72, glassBlur:16, fit:"cover" };
+var VER = "v5.10 · 2026-11-19";
+var cfg = rd(LS_CFG, {});
+for(var k in DEF){ if(cfg[k]===undefined) cfg[k]=DEF[k]; }
+var loads = rd(LS_LOAD, {});
+/* 一次性迁移：保加利亚蹲改成每手 10 kg，把旧的"自重 / 5"覆盖掉（只动这一项） */
+(function(){
+  var old = loads.bss;
+  if(old === undefined || old === null) return;
+  var s = String(old).replace(/\s/g, "");
+  if(s === "" || s === "自重" || s === "5" || s === "0" || s === "空手" || s === "5kg"){
+    loads.bss = "10/手";
+    wr(LS_LOAD, loads);
+  }
+})();
+var his = rd(LS_HIS, []);
+var notes = rd(LS_NOTE, {});
+
+/* 这台浏览器到底能不能存数据（用 file:// 打开时，有的浏览器会直接禁掉 localStorage） */
+var stOK = (function(){
+  try{
+    var k = "__sm_chk_" + Date.now();
+    localStorage.setItem(k, "1");
+    var ok = localStorage.getItem(k) === "1";
+    localStorage.removeItem(k);
+    return ok;
+  }catch(e){ return false; }
+})();
+
+/* ================= 工具 ================= */
+function $(s,r){ return (r||document).querySelector(s); }
+function totalSets(day){ return PLAN[day].items.reduce(function(a,x){ return a+x.sets; },0); }
+function mainSets(day){ return PLAN[day].items.reduce(function(a,x){ return a + (x.core?0:x.sets); },0); }
+function todayStr(){ var d=new Date(); return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate(); }
+function fmt(s){ s=Math.max(0,s|0); var m=Math.floor(s/60), r=s%60; return m+":"+(r<10?"0":"")+r; }
+function toast(msg){
+  var t=$("#toast"); t.textContent=msg; t.className="toast on";
+  clearTimeout(t._h); t._h=setTimeout(function(){ t.className="toast"; },1800);
+}
+function beep(times){
+  try{
+    var AC = window.AudioContext||window.webkitAudioContext; if(!AC) return;
+    if(!beep._ac) beep._ac = new AC();
+    var ac = beep._ac; if(ac.state==="suspended") ac.resume();
+    var t0 = ac.currentTime;
+    for(var k=0;k<(times||2);k++){
+      var o=ac.createOscillator(), g=ac.createGain();
+      o.type="sine"; o.frequency.setValueAtTime(880, t0+k*0.45);
+      g.gain.setValueAtTime(0.0001, t0+k*0.45);
+      g.gain.exponentialRampToValueAtTime(0.3, t0+k*0.45+0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0+k*0.45+0.32);
+      o.connect(g); g.connect(ac.destination);
+      o.start(t0+k*0.45); o.stop(t0+k*0.45+0.34);
+    }
+  }catch(e){}
+}
+function buzz(){ if(navigator.vibrate){ try{ navigator.vibrate([120,60,120]); }catch(e){} } }
+
+/* ================= 外观 ================= */
+function applyTheme(){
+  var t = cfg.theme;
+  if(t==="auto"){
+    var dark = false;
+    try{ dark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches; }catch(e){}
+    t = dark ? "dark" : "light";
+  }
+  document.documentElement.setAttribute("data-theme", t);
+  var meta = document.querySelector('meta[name="theme-color"]');
+  if(meta) meta.setAttribute("content", t==="dark" ? "#141619" : "#f2f1ec");
+}
+function applyLook(){
+  var r = document.documentElement.style;
+  r.setProperty("--bgblur", cfg.bgBlur + "px");
+  r.setProperty("--veilA", cfg.veil);
+  r.setProperty("--glassA", cfg.glassA);
+  r.setProperty("--glassBlur", cfg.glassBlur + "px");
+  r.setProperty("--bgfit", cfg.fit === "contain" ? "contain" : "cover");
+  if(cfg.bg){
+    document.body.classList.add("hasbg");
+    document.body.style.setProperty("--bgimg", 'url("' + cfg.bg + '")');
+    /* 同一张图再铺一层在 html 上：万一某些浏览器/滚动容器让 fixed 层对不齐，也不会露出底色 */
+    var h = document.documentElement.style;
+    h.backgroundImage = 'url("' + cfg.bg + '")';
+    h.backgroundSize = cfg.fit === "contain" ? "contain" : "cover";
+    h.backgroundPosition = "center center";
+    h.backgroundRepeat = "no-repeat";
+    h.backgroundAttachment = "fixed";
+  } else {
+    document.body.classList.remove("hasbg");
+    document.body.style.removeProperty("--bgimg");
+    var h2 = document.documentElement.style;
+    h2.backgroundImage = "";
+    h2.backgroundSize = "";
+    h2.backgroundPosition = "";
+    h2.backgroundRepeat = "";
+    h2.backgroundAttachment = "";
+  }
+  // 滑块数值
+  var map = [["v-bgblur", cfg.bgBlur + " px"],["v-veil", Math.round(cfg.veil*100) + " %"],
+             ["v-glass", Math.round(cfg.glassA*100) + " %"],["v-gblur", cfg.glassBlur + " px"]];
+  map.forEach(function(p){ var e = document.getElementById(p[0]); if(e) e.textContent = p[1]; });
+}
+
+/* ================= 休息计时 ================= */
+var T = { on:false, mode:"down", left:0, up:0, id:null };
+function openRest(sec){
+  if(sec<=0) return;
+  T.on=true; T.mode=cfg.mode; T.left=sec|0; T.up=0;
+  $("#restbar").className="on";
+  document.body.classList.add("resting");
+  paintRest();
+  if(T.id) clearInterval(T.id);
+  T.id=setInterval(function(){
+    if(T.mode==="down"){
+      T.left--;
+      if(T.left<=0){ closeRest(); beep(2); buzz(); return; }
+    } else { T.up++; }
+    paintRest();
+  },1000);
+  if(S.day) renderSession(true);
+}
+function paintRest(){
+  if(!T.on) return;
+  $("#rtime").textContent = (T.mode==="down") ? fmt(T.left) : fmt(T.up);
+  $("#rlabel").textContent = (T.mode==="down") ? "休息倒计时 · 组按钮已锁" : "已休息（正计时）· 组按钮已锁";
+}
+function closeRest(){
+  T.on=false; if(T.id){ clearInterval(T.id); T.id=null; }
+  $("#restbar").className="";
+  document.body.classList.remove("resting");
+  if(S.day) renderSession(true);
+}
+$("#restbar").addEventListener("click", function(e){
+  var b=e.target.closest("[data-r]"); if(!b) return;
+  var a=b.getAttribute("data-r");
+  if(a==="skip"){ closeRest(); }
+  else if(a==="add"){ if(T.mode==="down") T.left+=15; else T.up-=15; paintRest(); }
+  else if(a==="sub"){
+    if(T.mode==="down"){ T.left=Math.max(0,T.left-15); if(T.left===0){ closeRest(); beep(2); buzz(); } }
+    else T.up=Math.max(0,T.up-15);
+    paintRest();
+  }
+});
+
+/* ================= 唤醒锁 ================= */
+var wl=null;
+function keepAwake(){
+  try{
+    if("wakeLock" in navigator && !wl){
+      navigator.wakeLock.request("screen").then(function(s){
+        wl=s; s.addEventListener("release", function(){ wl=null; });
+      }).catch(function(){});
+    }
+  }catch(e){}
+}
+function dropAwake(){ try{ if(wl){ wl.release(); wl=null; } }catch(e){} }
+
+/* ================= 会话 ================= */
+var S = { day:null, i:0, done:{}, date:null };
+
+function saveSess(){
+  if(!S.day){ try{ localStorage.removeItem(LS_SESS); }catch(e){} return; }
+  wr(LS_SESS, { day:S.day, i:S.i, done:S.done, date:S.date, ts:Date.now() });
+}
+function readSess(){
+  var s = rd(LS_SESS, null);
+  if(!s || !s.day || !PLAN[s.day]) return null;
+  if(Date.now() - (s.ts||0) > 1000*60*60*24*3) return null;
+  return s;
+}
+function clearSess(){ try{ localStorage.removeItem(LS_SESS); }catch(e){} }
+function ago(ts){
+  var m = Math.round((Date.now()-ts)/60000);
+  if(m < 1) return "刚刚";
+  if(m < 60) return m + " 分钟前";
+  var h = Math.round(m/60);
+  if(h < 24) return h + " 小时前";
+  return Math.round(h/24) + " 天前";
+}
+function startSession(day, restore, date){
+  var s = restore || null;
+  S.day = day;
+  S.i = s ? Math.min(s.i||0, PLAN[day].items.length-1) : 0;
+  S.done = s ? (s.done||{}) : {};
+  S.date = (s && s.date) || date || todayStr();
+  keepAwake(); saveSess(); renderSession();
+}
+function curItems(){ return PLAN[S.day].items; }
+function dayDoneSets(){
+  var n=0;
+  curItems().forEach(function(it){ n += Math.min(S.done[it.id]||0, it.sets); });
+  return n;
+}
+
+/* ================= 首页 ================= */
+function weekCount(){
+  var now=new Date(), d=now.getDay();
+  var mon=new Date(now); mon.setDate(now.getDate()-(d===0?6:d-1)); mon.setHours(0,0,0,0);
+  var n={};
+  newHis().forEach(function(h){ if(new Date(h.ts)>=mon) n[recDay(h)]=true; });
+  return Object.keys(n).length;
+}
+function lastOf(day){
+  for(var i=his.length-1;i>=0;i--){ if(recDay(his[i])===day) return his[i]; }
+  return null;
+}
+/* ================= 主界面 · 四栏 ================= */
+var TAB = "fit";
+var CAL = null;
+var SELKEY = null;
+var NOTE_DATE = null;
+
+function esc(s){
+  return String(s).replace(/[&<>"]/g, function(c){
+    return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c];
+  });
+}
+function keyOf(y,m,d){ return y + "-" + m + "-" + d; }
+
+function renderApp(){
+  $("#home").style.display = TAB==="fit" ? "block" : "none";
+  $("#cal").style.display  = TAB==="cal" ? "block" : "none";
+  $("#note").style.display = TAB==="note" ? "block" : "none";
+  $("#set").style.display  = TAB==="set" ? "block" : "none";
+  $("#session").style.display = "none";
+  document.body.classList.remove("in-session");
+  var btns = document.querySelectorAll("#tabbar button");
+  for(var i=0;i<btns.length;i++){
+    btns[i].className = (btns[i].getAttribute("data-tab")===TAB) ? "act" : "";
+  }
+  if(TAB==="cal") renderCalendar();
+  else if(TAB==="note") renderNotes();
+  else if(TAB==="set") renderSettings();
+  else renderFit();
+}
+
+/* 底部四栏的点击（事件委托，图标里的 svg/path 也算） */
+function bindTabbar(){
+  var nav = document.getElementById("tabbar");
+  if(!nav || nav.__bound) return;
+  nav.__bound = 1;
+  nav.addEventListener("click", function(e){
+    var el = e.target;
+    while(el && el !== nav && !(el.getAttribute && el.getAttribute("data-tab"))) el = el.parentNode;
+    if(!el || el === nav) return;
+    var t = el.getAttribute("data-tab");
+    if(!t) return;
+    TAB = t;
+    renderApp();
+    window.scrollTo(0, 0);
+  });
+}
+
+/* 轮转备用：A→B→C→D→E 循环（轻日不参与） */
+function nextOf(day){
+  var order = ["A","B","C","D","E"];
+  var i = order.indexOf(day);
+  if(i < 0) return "A";                 /* L（有氧）或认不出的日子 → 回到 A */
+  return order[(i+1) % order.length];
+}
+/* 日志日期是不补零的（2026-11-9），直接按字符串比大小会错，
+   统一压成 YYYYMMDD 再比 */
+function dateKey(d){
+  var p = String(d || "").split("-");
+  return (parseInt(p[0],10)||0)*10000 + (parseInt(p[1],10)||0)*100 + (parseInt(p[2],10)||0);
+}
+/* 换成 v5.9 之后，之前练的都算「上一套」：记录一条不删，
+   历史、日历、重量全留着，但排期和「本周已练」从新一套重新算。
+   另外旧计划里的 D 是「肩 + 手臂」，对应新计划的 E，标签和排期都按 E 认。 */
+var GEN = "2026-11-19";
+function recDay(h){
+  if(!h || !h.day) return "";
+  return (h.day === "D" && dateKey(h.date) < dateKey(GEN)) ? "E" : h.day;
+}
+function newHis(){
+  var g = dateKey(GEN);
+  return his.filter(function(h){ return h && h.date && dateKey(h.date) >= g; });
+}
+/* 最近一次完成的训练（按日期，其次按时刻） */
+function latestHis(){
+  var best = null, bk = -1, bt = -1;
+  his.forEach(function(h){
+    if(!h || !h.date) return;
+    var k = dateKey(h.date), t = h.ts || 0;
+    if(k > bk || (k === bk && t >= bt)){ best = h; bk = k; bt = t; }
+  });
+  return best;
+}
+/* 今天已经练过的日子：{A:true, C:true}（只认新一套） */
+function todayDone(){
+  var t = todayStr(), m = {};
+  newHis().forEach(function(h){ if(h && h.date === t) m[recDay(h)] = true; });
+  return m;
+}
+/* 排期：周五表当天为主（周一 A … 周六 E，周三/周日 轻日）；
+   但「今天或昨天刚练过的那块」不再推第二次——刚练完 C 又推 C 最不靠谱；
+   被挡住就往后顺延，最多绕一圈；想临时换顺序，直接点下面那张卡片。 */
+function suggestDay(){
+  var td = todayDone();
+  var last = latestHis();
+  var d = (new Date()).getDay();
+  var y = new Date(); y.setDate(y.getDate() - 1);
+  var kY = dateKey(y.getFullYear() + "-" + (y.getMonth() + 1) + "-" + y.getDate());
+  var kT = dateKey(todayStr());
+  var avoid = {};
+  his.forEach(function(h){
+    if(!h || !h.date) return;
+    var k = dateKey(h.date);
+    if(k === kT || k === kY) avoid[recDay(h)] = true;
+  });
+  var pick = null;
+  for(var i = 0; i < 7; i++){
+    var k2 = WEEKPLAN[(d + i) % 7];
+    if(!avoid[k2] && !td[k2]){ pick = k2; break; }
+  }
+  if(!pick) pick = WEEKPLAN[d];
+  return { day: pick, doneToday: td, last: last };
+}
+
+/* ---- 第 1 栏：开始健身 ---- */
+function renderFit(){
+  var sg = suggestDay();
+  var pick = sg.day, td = sg.doneToday;
+  var sess = readSess();
+  var h = "";
+  var doneNames = ORDER.filter(function(k){ return td[k]; })
+                       .map(function(k){ return PLAN[k].name; }).join("、");
+  h += '<div class="sub" style="margin:12px 0 12px">今天 ' + todayStr() + ' · 本周已练 ' + weekCount() + ' 天'
+     + (doneNames ? ' · 今天已完成 ' + doneNames : ' · 今天还没练')
+     + (pick ? ' · 下一次 ' + PLAN[pick].name : ' · 这一轮练完了') + '</div>';
+
+  if(sess){
+    var p0 = PLAN[sess.day], dn = 0;
+    p0.items.forEach(function(it){ dn += Math.min((sess.done||{})[it.id]||0, it.sets); });
+    h += '<div class="resume glass">'
+       +   '<div class="grow">'
+       +     '<div class="t">继续上次 · ' + p0.name + '</div>'
+       +     '<div class="tiny muted" style="margin-top:3px">' + dn + ' / ' + totalSets(sess.day) + ' 组 · ' + ago(sess.ts) + '</div>'
+       +   '</div>'
+       +   '<button class="btn-sm btn-main" data-cont="1">继续</button>'
+       +   '<button class="btn-sm btn-soft" data-drop="1">不要了</button>'
+       + '</div>';
+  }
+
+  ORDER.forEach(function(k){
+    var p=PLAN[k], last=lastOf(k);
+    var tag = td[k] ? '<span class="pill pill-done">已完成</span>'
+            : (k === pick ? '<span class="pill">下次</span>' : '');
+    var lastTxt = last ? ("上次 " + last.date + " · " + last.sets + " 组") : "还没练过";
+    var ms = mainSets(k), cs = totalSets(k) - ms;
+    var setTxt = ms + " 组" + (cs ? " + 核心 " + cs : "");
+    h += '<div class="daycard glass" data-day="'+k+'" style="margin-top:12px">'
+       +   '<div class="bar" style="background:'+p.hex+'"></div>'
+       +   '<div class="body">'
+       +     '<div class="t"><span>'+p.name+tag+'</span><span class="cnt">'+setTxt+'</span></div>'
+       +     '<div class="sub" style="margin-top:2px">'+p.sub+'</div>'
+       +     '<div class="tiny muted" style="margin-top:6px">'+lastTxt+'</div>'
+       +   '</div>'
+       + '</div>';
+  });
+
+  if(!stOK){
+    h += '<div class="resume glass" style="margin-top:14px;border-color:rgba(255,120,90,.5)">'
+       +   '<div class="grow"><div class="t" style="font-size:15px">这台浏览器不让本地文件保存数据</div>'
+       +     '<div class="tiny muted" style="margin-top:4px">组数、重量、进度只在这一个页面里有效，关掉就没了。'
+       +     '想让它记住：把文件放到网址上打开（https），或者在电脑上开一下小服务器用局域网地址打开。</div></div>'
+       + '</div>';
+  }
+  h += '<div class="tiny muted" style="margin-top:16px;line-height:1.7">'
+     + '点一个日子开始 · 每组点一下就自动休息（休息中组按钮会锁住）· '
+     + (stOK ? '重量和进度都自动存，刷新不丢'
+             : '这个浏览器存不住数据，练完先到「设置」里导出，下次可以导入找回来')
+     + '</div>'
+     + '<div class="tiny muted" style="margin-top:8px;line-height:1.7">'
+     + '排期规则：周一到周六固定 A→B→轻→C→D→E，周日轻日；今天或昨天刚练过的那天不再标「下次」，自动顺延到下一天；'
+     + '想临时换顺序就直接点那张卡片。</div>'
+     + '<div class="tiny muted" style="margin-top:8px;line-height:1.7">'
+     + '递进：规定的次数全做到、最后一组还剩 1 下力气（RIR 1）→ 下次先加次数，次数顶满再加重量'
+     + '（哑铃 +2.5/只，杠铃 +5，器械 +5）。<br>'
+     + '减载：每练满 5 周，用一周把重量降 10%、组数砍到 2/3，之后重新往上加。<br>'
+     + '热身不算在组数里，但每次都必须做：单车 5 分钟 + 弹力带外旋 2×15 + 主项递增 2–3 组。<br>'
+     + '记录：换计划之前练的都算「上一套」——一条没删，历史、日历、重量都还在，'
+     + '但「本周已练」和下次排期从 11-19 这一套重新算。</div>';
+
+  var box=$("#home"); box.innerHTML=h; box.style.display="block";
+  box.onclick=function(e){
+    if(e.target.closest("[data-drop]")){ clearSess(); toast("已放弃上次记录"); renderFit(); return; }
+    var c=e.target.closest("[data-cont]");
+    if(c){ var s=readSess(); if(s) startSession(s.day, s); return; }
+    var d=e.target.closest("[data-day]");
+    if(d){ startSession(d.getAttribute("data-day")); return; }
+  };
+}
+
+/* ---- 第 2 栏：训练记录 · 日历 ---- */
+function calMap(){
+  var map = {};
+  his.forEach(function(h){
+    var k = h.date;
+    if(!map[k]) map[k] = { n:0, sets:0, letters:[], items:[] };
+    map[k].n++; map[k].sets += (h.sets||0);
+    map[k].letters.push(recDay(h));
+    map[k].items.push(h);
+  });
+  return map;
+}
+function renderCalendar(){
+  if(!CAL){ var n0=new Date(); CAL = { y:n0.getFullYear(), m:n0.getMonth()+1 }; }
+  var map = calMap();
+  var days = new Date(CAL.y, CAL.m, 0).getDate();
+  var startW = (new Date(CAL.y, CAL.m-1, 1).getDay() + 6) % 7;  // 周一算第一列
+  var today = todayStr();
+
+  var mDays=0, mSets=0;
+  for(var d=1; d<=days; d++){
+    var kk = keyOf(CAL.y, CAL.m, d);
+    if(map[kk]){ mDays++; mSets += map[kk].sets; }
+  }
+
+  var h = '';
+  h += '<div class="calhead">'
+     +   '<button class="btn-sm btn-soft" data-mv="-1">‹</button>'
+     +   '<div class="m">'+CAL.y+' 年 '+CAL.m+' 月</div>'
+     +   '<button class="btn-sm btn-soft" data-mv="1">›</button>'
+     +   '<div class="grow"></div>'
+     +   '<button class="btn-sm btn-soft" data-mv="0">今天</button>'
+     + '</div>';
+  h += '<div class="sub" style="margin:0 0 12px">这个月练了 <b>'+mDays+'</b> 天 · 共 <b>'+mSets+'</b> 组'
+     + (mDays===0 ? ' · 还没开张' : '') + '</div>';
+
+  h += '<div class="calgrid">';
+  ["一","二","三","四","五","六","日"].forEach(function(w){ h += '<div class="wd">'+w+'</div>'; });
+  for(var i=0; i<startW; i++) h += '<div class="calcell empty"></div>';
+  for(var d2=1; d2<=days; d2++){
+    var k2 = keyOf(CAL.y, CAL.m, d2), it = map[k2];
+    var cls = 'calcell' + (it?' has':'') + (k2===today?' today':'') + (k2===SELKEY?' sel':'');
+    var st = '';
+    if(it){
+      var a = it.sets>=16 ? .62 : (it.sets>=10 ? .40 : .22);
+      st = 'background:rgba(24,150,100,'+a+');border-color:transparent';
+    }
+    h += '<div class="'+cls+'" data-day="'+k2+'" style="'+st+'">'
+       +   '<span>'+d2+'</span>'
+       +   (it ? '<span class="dm">'+it.letters.join("")+'</span>' : '')
+       + '</div>';
+  }
+  h += '</div>';
+  h += '<div class="legend">'
+     +   '<span><i style="background:rgba(24,150,100,.22)"></i>少</span>'
+     +   '<span><i style="background:rgba(24,150,100,.40)"></i>中</span>'
+     +   '<span><i style="background:rgba(24,150,100,.62)"></i>多</span>'
+     + '</div>';
+
+  if(SELKEY){
+    var sel = map[SELKEY];
+    h += '<div class="calday glass" style="border-radius:16px;padding:14px 16px">'
+       +   '<div style="font-weight:700;font-size:16px">'+SELKEY+'</div>';
+    if(sel){
+      sel.items.forEach(function(x){
+        h += '<div class="small" style="margin-top:7px">'+PLAN[recDay(x) || x.day].name+' · <b>'+x.sets+'</b>/'+x.total+' 组</div>';
+      });
+    } else {
+      h += '<div class="small muted" style="margin-top:7px">这天没有训练记录</div>';
+    }
+    if(notes[SELKEY]){
+      h += '<div class="small" style="margin-top:12px;padding-top:12px;border-top:1px dashed var(--line);line-height:1.65">'
+         + '心得：'+esc(notes[SELKEY])+'</div>';
+    }
+    h += '<div class="phsec" id="phsec" data-date="'+SELKEY+'">'
+       +   '<div class="phtop"><span class="small muted">照片</span><span class="tiny muted" id="phcnt">加载中…</span></div>'
+       +   '<div class="phgrid" id="phgrid"></div>'
+       +   '<div class="phbtns">'
+       +     '<button class="btn-sm btn-main" data-pick="1">从相册选</button>'
+       +     '<button class="btn-sm btn-soft" data-snap="1">直接拍</button>'
+       +   '</div>'
+       +   '<div class="tiny muted phtip">想相册里也留一份，就用「从相册选」（相册是原图，这边存压缩版）</div>'
+       + '</div>';
+    h += '<div style="margin-top:14px;padding-top:12px;border-top:1px dashed var(--line)">'
+       +   '<div class="tiny muted">补录：这天练的是哪一块？点一下就进去记（完成记到这天）</div>'
+       +   '<div class="backrow">'
+       +     ORDER.slice(0,5).map(function(k){
+               return '<button class="btn-sm btn-soft" data-back="'+k+'">'+PLAN[k].name+'</button>';
+             }).join("")
+       +   '</div>'
+       + '</div>';
+    h += '<button class="btn-sm btn-soft" data-wnote="'+SELKEY+'" style="margin-top:12px">给这天写心得</button>'
+       + '</div>';
+  }
+
+  var box=$("#cal"); box.innerHTML=h; box.style.display="block";
+  box.onclick=function(e){
+    var mv = e.target.closest("[data-mv]");
+    if(mv){
+      var v = parseInt(mv.getAttribute("data-mv"),10);
+      if(v===0){ var nn=new Date(); CAL = { y:nn.getFullYear(), m:nn.getMonth()+1 }; }
+      else {
+        CAL.m += v;
+        if(CAL.m < 1){ CAL.m = 12; CAL.y--; }
+        if(CAL.m > 12){ CAL.m = 1; CAL.y++; }
+      }
+      SELKEY = null; renderCalendar(); return;
+    }
+    var c = e.target.closest("[data-day]");
+    if(c){ var k = c.getAttribute("data-day"); SELKEY = (SELKEY===k ? null : k); renderCalendar(); return; }
+    var wn = e.target.closest("[data-wnote]");
+    if(wn){ NOTE_DATE = wn.getAttribute("data-wnote"); TAB = "note"; renderApp(); return; }
+    if(e.target.closest("[data-pick]")){ pickPhotos(SELKEY); return; }
+    if(e.target.closest("[data-snap]")){ snapPhoto(SELKEY); return; }
+    var bk = e.target.closest("[data-back]");
+    if(bk){
+      var dk = bk.getAttribute("data-back");
+      startSession(dk, null, SELKEY);
+      return;
+    }
+    var ph = e.target.closest("[data-pid]");
+    if(ph){ openViewer(SELKEY, ph.getAttribute("data-pid")); return; }
+  };
+  if(SELKEY) paintPhotos(SELKEY);
+}
+
+/* ---- 训练照片（IndexedDB，一天最多 5 张） ---- */
+var PH_MAX = 5, PH_EDGE = 1280, PH_Q = 0.72, PH_TEDGE = 320, PH_TQ = 0.6;
+var PDB = null, PH_URLS = [], PV = { list:[], i:0, urls:[] };
+
+function openDB(){
+  if(PDB) return Promise.resolve(PDB);
+  return new Promise(function(res, rej){
+    if(!window.indexedDB) return rej(new Error("no idb"));
+    var r = indexedDB.open("sm_photos", 1);
+    r.onupgradeneeded = function(e){
+      var db = e.target.result;
+      if(!db.objectStoreNames.contains("ph")){
+        var st = db.createObjectStore("ph", { keyPath:"id" });
+        st.createIndex("date", "date", { unique:false });
+      }
+    };
+    r.onsuccess = function(){ PDB = r.result; res(PDB); };
+    r.onerror = function(){ rej(r.error || new Error("idb")); };
+  });
+}
+function phAll(){
+  return openDB().then(function(db){
+    return new Promise(function(res, rej){
+      var q = db.transaction("ph").objectStore("ph").getAll();
+      q.onsuccess = function(){ res(q.result || []); };
+      q.onerror = function(){ rej(q.error); };
+    });
+  });
+}
+function phByDate(d){
+  return phAll().then(function(a){
+    return a.filter(function(x){ return x.date === d; }).sort(function(x,y){ return x.ts - y.ts; });
+  });
+}
+function phPut(rec){
+  return openDB().then(function(db){
+    return new Promise(function(res, rej){
+      var t = db.transaction("ph", "readwrite");
+      t.objectStore("ph").put(rec);
+      t.oncomplete = function(){ res(); };
+      t.onerror = function(){ rej(t.error || new Error("put")); };
+      t.onabort = function(){ rej(t.error || new Error("abort")); };
+    });
+  });
+}
+function phDel(id){
+  return openDB().then(function(db){
+    return new Promise(function(res, rej){
+      var t = db.transaction("ph", "readwrite");
+      t.objectStore("ph").delete(id);
+      t.oncomplete = function(){ res(); };
+      t.onerror = function(){ rej(t.error); };
+    });
+  });
+}
+function phClear(){
+  return openDB().then(function(db){
+    return new Promise(function(res, rej){
+      var t = db.transaction("ph", "readwrite");
+      t.objectStore("ph").clear();
+      t.oncomplete = function(){ res(); };
+      t.onerror = function(){ rej(t.error); };
+    });
+  });
+}
+function phStats(){
+  return phAll().then(function(a){
+    var bytes = 0;
+    a.forEach(function(p){ bytes += (p.size || (p.full && p.full.size) || 0); });
+    return { n:a.length, bytes: bytes, mb: bytes / 1048576 };
+  });
+}
+function fmtSize(bytes){
+  if(bytes >= 1048576) return (bytes/1048576).toFixed(1) + " MB";
+  if(bytes >= 1024) return Math.round(bytes/1024) + " KB";
+  return bytes + " B";
+}
+
+/* 压到长边 edge，画布重绘顺带把 EXIF 方向摆正 */
+function phCompress(file, edge, q){
+  return new Promise(function(res, rej){
+    var url = URL.createObjectURL(file);
+    var img = new Image();
+    img.onload = function(){
+      try{
+        var w = img.naturalWidth || img.width, h = img.naturalHeight || img.height;
+        var s = Math.min(1, edge / Math.max(w, h));
+        var cw = Math.max(1, Math.round(w * s)), ch = Math.max(1, Math.round(h * s));
+        var c = document.createElement("canvas");
+        c.width = cw; c.height = ch;
+        c.getContext("2d").drawImage(img, 0, 0, cw, ch);
+        c.toBlob(function(b){
+          URL.revokeObjectURL(url);
+          if(b) res({ blob:b, w:cw, h:ch });
+          else rej(new Error("toBlob"));
+        }, "image/jpeg", q);
+      }catch(err){ URL.revokeObjectURL(url); rej(err); }
+    };
+    img.onerror = function(){ URL.revokeObjectURL(url); rej(new Error("decode")); };
+    img.src = url;
+  });
+}
+
+function addPhotos(date, files){
+  var arr = Array.prototype.slice.call(files || []).filter(function(f){
+    return f && (!f.type || /^image\//.test(f.type));
+  });
+  if(!arr.length){ toast("没有选到图片"); return Promise.resolve(); }
+  return phByDate(date).then(function(list){
+    var left = PH_MAX - list.length;
+    if(left <= 0){ toast("这天已经 "+PH_MAX+" 张了，先在照片里删一张"); return; }
+    var take = arr.slice(0, left);
+    if(arr.length > left) toast("只存前 "+left+" 张（一天上限 "+PH_MAX+"）");
+    else toast("正在处理 "+take.length+" 张…");
+    return take.reduce(function(p, f){
+      return p.then(function(){
+        return phCompress(f, PH_EDGE, PH_Q).then(function(big){
+          return phCompress(f, PH_TEDGE, PH_TQ).then(function(sm){
+            return phPut({
+              id: date + "_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7),
+              date: date, ts: Date.now(), w: big.w, h: big.h, size: big.blob.size,
+              full: big.blob, thumb: sm.blob
+            });
+          });
+        });
+      });
+    }, Promise.resolve()).then(function(){
+      paintPhotos(date);
+      toast("照片已存");
+    });
+  }).catch(function(err){
+    console.error(err);
+    toast("照片存不进去（存储可能满了）");
+  });
+}
+
+function phInput(date, multiple, capture){
+  var inp = document.createElement("input");
+  inp.type = "file"; inp.accept = "image/*";
+  if(multiple) inp.multiple = true;
+  if(capture) inp.capture = "environment";
+  inp.style.cssText = "position:fixed;left:-9999px;top:0;opacity:0";
+  document.body.appendChild(inp);
+  inp.onchange = function(){
+    var fs = inp.files;
+    addPhotos(date, fs).then(function(){ inp.remove(); }, function(){ inp.remove(); });
+  };
+  setTimeout(function(){ try{ inp.remove(); }catch(e){} }, 120000);
+  inp.click();
+}
+function pickPhotos(date){ if(date) phInput(date, true, false); }
+function snapPhoto(date){ if(date) phInput(date, false, true); }
+
+function revokePh(){
+  PH_URLS.forEach(function(u){ try{ URL.revokeObjectURL(u); }catch(e){} });
+  PH_URLS = [];
+}
+function paintPhotos(date){
+  if(!document.getElementById("phgrid")) return;
+  var c0 = document.getElementById("phcnt");
+  var done = false;
+  var guard = setTimeout(function(){
+    if(done) return;
+    done = true;
+    var c = document.getElementById("phcnt");
+    if(c) c.textContent = "这台浏览器存不了照片";
+  }, 4000);
+  phByDate(date).then(function(list){
+    done = true; clearTimeout(guard);
+    var g = document.getElementById("phgrid"); if(!g) return;
+    var c = document.getElementById("phcnt");
+    if(c) c.textContent = list.length + " / " + PH_MAX + " 张";
+    revokePh();
+    g.innerHTML = "";
+    if(!list.length){
+      var e = document.createElement("div");
+      e.className = "phempty";
+      e.textContent = "这天还没照片";
+      g.appendChild(e);
+      return;
+    }
+    list.forEach(function(p){
+      var d = document.createElement("div");
+      d.className = "phitem"; d.setAttribute("data-pid", p.id);
+      var im = document.createElement("img");
+      var u = URL.createObjectURL(p.thumb || p.full);
+      PH_URLS.push(u);
+      im.src = u; im.loading = "lazy"; im.alt = date;
+      d.appendChild(im); g.appendChild(d);
+    });
+  }).catch(function(){
+    done = true; clearTimeout(guard);
+    var c = document.getElementById("phcnt");
+    if(c) c.textContent = "照片读不出来";
+  });
+}
+
+function openViewer(date, pid){
+  phByDate(date).then(function(list){
+    if(!list.length) return;
+    PV.list = list;
+    PV.i = 0;
+    for(var i=0;i<list.length;i++){ if(list[i].id === pid){ PV.i = i; break; } }
+    document.getElementById("photoView").classList.add("on");
+    showPV();
+  });
+}
+function showPV(){
+  var p = PV.list[PV.i]; if(!p) return;
+  PV.urls.forEach(function(u){ try{ URL.revokeObjectURL(u); }catch(e){} });
+  PV.urls = [];
+  var u = URL.createObjectURL(p.full); PV.urls.push(u);
+  document.getElementById("pvimg").src = u;
+  document.getElementById("pvbar").textContent = (PV.i+1) + " / " + PV.list.length + " · " + p.date;
+  document.getElementById("pvprev").disabled = (PV.i === 0);
+  document.getElementById("pvnext").disabled = (PV.i === PV.list.length - 1);
+}
+function closeViewer(){
+  document.getElementById("photoView").classList.remove("on");
+  document.getElementById("pvimg").src = "";
+  PV.urls.forEach(function(u){ try{ URL.revokeObjectURL(u); }catch(e){} });
+  PV.urls = [];
+}
+function bindPhotoView(){
+  var v = document.getElementById("photoView");
+  if(!v || v.__b) return;
+  v.__b = 1;
+  v.addEventListener("click", function(e){
+    if(e.target.closest("[data-pvclose]")){ closeViewer(); return; }
+    if(e.target.id === "pvprev"){ if(PV.i > 0){ PV.i--; showPV(); } return; }
+    if(e.target.id === "pvnext"){ if(PV.i < PV.list.length-1){ PV.i++; showPV(); } return; }
+    if(e.target.closest("[data-pvdel]")){
+      var p = PV.list[PV.i]; if(!p) return;
+      if(!confirm("删掉这张照片？")) return;
+      phDel(p.id).then(function(){ closeViewer(); paintPhotos(p.date); });
+    }
+  });
+  var x0 = null;
+  v.addEventListener("touchstart", function(e){ x0 = e.touches[0].clientX; }, {passive:true});
+  v.addEventListener("touchend", function(e){
+    if(x0 === null) return;
+    var dx = e.changedTouches[0].clientX - x0;
+    x0 = null;
+    if(Math.abs(dx) < 40) return;
+    if(dx < 0 && PV.i < PV.list.length-1){ PV.i++; showPV(); }
+    else if(dx > 0 && PV.i > 0){ PV.i--; showPV(); }
+  }, {passive:true});
+}
+
+/* ---- 第 3 栏：每日心得 ---- */
+function renderNotes(){
+  if(!NOTE_DATE) NOTE_DATE = todayStr();
+  var keys = Object.keys(notes).sort().reverse();
+  var h = '';
+  h += '<div class="row" style="margin:14px 0 10px">'
+     +   '<div class="grow"><b style="font-size:17px;font-variant-numeric:tabular-nums">'+NOTE_DATE+'</b>'
+     +     '<span class="tiny muted" style="margin-left:8px">'+(NOTE_DATE===todayStr()?'今天':'补写')+'</span></div>'
+     +   (NOTE_DATE!==todayStr() ? '<button class="btn-sm btn-soft" data-today="1">回到今天</button>' : '')
+     + '</div>';
+  h += '<textarea class="notebox" id="notebox" placeholder="今天练得怎么样？哪一组最吃力、哪个动作找到感觉了、身上哪里不舒服……">'
+     + esc(notes[NOTE_DATE]||"") + '</textarea>';
+  h += '<div class="row" style="margin-top:10px">'
+     +   '<div class="tiny muted grow" id="notecnt"></div>'
+     +   '<button class="btn-main btn-sm" data-save="1">保存</button>'
+     + '</div>';
+
+  if(keys.length){
+    h += '<div class="small muted" style="margin:22px 0 2px">过往心得 · '+keys.length+' 天</div>';
+    keys.forEach(function(k){
+      h += '<div class="noterow glass" data-row="'+k+'">'
+         +   '<div class="d">'+k+(k===NOTE_DATE?' · 正在编辑':'')+'</div>'
+         +   '<div class="x">'+esc(notes[k])+'</div>'
+         + '</div>';
+    });
+  } else {
+    h += '<div class="tiny muted" style="margin-top:20px;line-height:1.7">还没有心得。'
+       + '练完顺手写两句——两个月以后回头看，这些字比训练记录值钱。</div>';
+  }
+
+  var box=$("#note"); box.innerHTML=h; box.style.display="block";
+  var ta = $("#notebox");
+  function cnt(){
+    var e=$("#notecnt"); if(e) e.textContent = (ta.value||"").length + " 字";
+  }
+  if(ta){ ta.addEventListener("input", cnt); cnt(); }
+
+  box.onclick=function(e){
+    var s = e.target.closest("[data-save]");
+    if(s){
+      var v = (ta.value||"").trim();
+      if(v){ notes[NOTE_DATE] = v; } else { delete notes[NOTE_DATE]; }
+      if(wr(LS_NOTE, notes)) toast(v ? "已保存 · "+NOTE_DATE : "已清空 · "+NOTE_DATE);
+      else toast("这台浏览器存不住，先到设置里导出");
+      renderNotes(); return;
+    }
+    if(e.target.closest("[data-today]")){ NOTE_DATE = todayStr(); renderNotes(); return; }
+    var r = e.target.closest("[data-row]");
+    if(r){ NOTE_DATE = r.getAttribute("data-row"); renderNotes(); window.scrollTo(0,0); return; }
+  };
+}
+
+/* ---- 第 4 栏：设置 ---- */
+function setRow(k, v, act){
+  return '<div class="setrow" data-a="'+act+'"><div class="k">'+k+'</div>'
+       + '<div class="v">'+v+'</div><div class="ar">›</div></div>';
+}
+function renderSettings(){
+  var themeName = cfg.theme==="auto" ? "跟随系统" : (cfg.theme==="dark" ? "深色" : "浅色");
+  var h = '';
+  h += '<div class="small muted" style="margin:14px 0 0">外观</div>';
+  h += '<div class="setlist glass">'
+     +   setRow("外观与背景图", themeName, "sheet")
+     +   setRow("休息计时", cfg.mode==="down" ? "倒计时" : "正计时", "mode")
+     + '</div>';
+
+  h += '<div class="small muted" style="margin:18px 0 0">数据</div>';
+  h += '<div class="setlist glass">'
+     +   setRow("导出训练记录", "JSON 备份", "export")
+     +   setRow("导入记录", "从 JSON 恢复", "import")
+     +   setRow("最近记录", his.length ? (his.length + " 次") : "还没有", "his")
+     +   setRow("训练照片", '<span id="phstat">统计中…</span>', "photos")
+     + '</div>';
+
+  if(!stOK){
+    h += '<div class="resume glass" style="margin-top:14px;border-color:rgba(255,120,90,.5)">'
+       +   '<div class="grow"><div class="t" style="font-size:15px">这台浏览器存不住数据</div>'
+       +     '<div class="tiny muted" style="margin-top:4px">重量和进度关掉就没了。把它放到网址上打开（https）就能正常保存。</div></div>'
+       + '</div>';
+  }
+  h += '<div class="tiny muted" style="margin-top:20px;line-height:1.8">健历 · 自用训练卡 · ' + VER + '<br>'
+     + '上肢推 / 下肢 / 上肢拉 / 肩臂 / 轻日<br>'
+     + '存储：' + (stOK ? "正常" : "不可用") + ' · 记录 ' + his.length + ' 次 · 心得 ' + Object.keys(notes).length + ' 天</div>';
+
+  var box=$("#set"); box.innerHTML=h; box.style.display="block";
+  phStats().then(function(s){
+    var e = document.getElementById("phstat");
+    if(e) e.textContent = s.n ? (s.n + " 张 · " + fmtSize(s.bytes)) : "还没有";
+  }).catch(function(){
+    var e = document.getElementById("phstat");
+    if(e) e.textContent = "不可用";
+  });
+  box.onclick=function(e){
+    var b=e.target.closest("[data-a]"); if(!b) return;
+    var a=b.getAttribute("data-a");
+    if(a==="sheet"){ openSheet(); return; }
+    if(a==="mode"){
+      cfg.mode = cfg.mode==="down" ? "up" : "down";
+      wr(LS_CFG,cfg); renderSettings();
+      toast("休息计时：" + (cfg.mode==="down" ? "倒计时" : "正计时"));
+      return;
+    }
+    if(a==="export"){ exportData(); return; }
+    if(a==="import"){ importData(); return; }
+    if(a==="his"){ showHistory(); return; }
+    if(a==="photos"){
+      phStats().then(function(s){
+        if(!s.n){ toast("还没有照片"); return; }
+        if(confirm("现有 " + s.n + " 张照片，占 " + fmtSize(s.bytes) + "。\n\n点“确定”清空全部照片（文字记录和心得不受影响）")){
+          phClear().then(function(){ toast("照片已清空"); renderSettings(); });
+        }
+      });
+      return;
+    }
+  };
+}
+
+/* 旧名字保留：训练结束后回到第 1 栏 */
+function renderHome(){ TAB = "fit"; renderApp(); }
+
+/* ---- 开屏翻页 ---- */
+function initSplash(){
+  var sp = $("#splash"); if(!sp) return;
+  var done = false;
+  function flip(){
+    if(done) return;
+    done = true;
+    sp.classList.add("turn");
+    setTimeout(function(){ sp.style.display = "none"; }, 960);
+  }
+  sp.addEventListener("click", flip);
+  var sy = null;
+  sp.addEventListener("touchstart", function(e){ sy = e.touches[0].clientY; }, {passive:true});
+  sp.addEventListener("touchend", function(e){
+    if(sy!=null && (sy - e.changedTouches[0].clientY) > 24) flip();
+    sy = null;
+  }, {passive:true});
+  sp.addEventListener("wheel", function(e){ if(e.deltaY > 6) flip(); }, {passive:true});
+  window.addEventListener("keydown", function(e){
+    if(e.key==="ArrowUp" || e.key===" " || e.key==="Enter") flip();
+  });
+  return flip;
+}
+
+function showHistory(){
+  if(!his.length){ toast("还没有记录"); return; }
+  var txt = his.slice(-14).map(function(h){ return h.date+"  "+PLAN[recDay(h)].name+"  "+h.sets+"/"+h.total+" 组"; }).join("\n");
+  alert("最近记录（共 "+his.length+" 次）：\n\n"+txt);
+}
+function exportData(){
+  var payload = { exported:new Date().toISOString(), loads:loads, history:his, notes:notes };
+  var blob = new Blob([JSON.stringify(payload,null,2)], {type:"application/json"});
+  var a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="训练记录-"+todayStr()+".json";
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(function(){ URL.revokeObjectURL(a.href); },3000);
+  toast("已导出");
+}
+function importData(){
+  var inp = document.createElement("input");
+  inp.type = "file"; inp.accept = ".json,application/json";
+  inp.style.display = "none";
+  document.body.appendChild(inp);
+  inp.onchange = function(){
+    var f = inp.files && inp.files[0];
+    if(!f){ inp.remove(); return; }
+    var fr = new FileReader();
+    fr.onload = function(){
+      var p;
+      try{ p = JSON.parse(String(fr.result)); }
+      catch(e){ toast("这个文件读不出来，是不是选错了"); inp.remove(); return; }
+      var nl = 0, nh = 0;
+      if(p && p.loads){
+        for(var k in p.loads){
+          var v = p.loads[k];
+          if(typeof v === "number" && isFinite(v)){ loads[k] = v; nl++; }
+        }
+        wr(LS_LOAD, loads);
+      }
+      if(p && p.history && p.history.length){
+        var seen = {};
+        his.forEach(function(h){ seen[(h.date||"") + "|" + h.day] = 1; });
+        p.history.forEach(function(h){
+          if(h && h.date && h.day && !seen[h.date + "|" + h.day]){ his.push(h); seen[h.date + "|" + h.day] = 1; nh++; }
+        });
+        his.sort(function(a,b){ return (a.date||"") < (b.date||"") ? -1 : 1; });
+        wr(LS_HIS, his);
+      }
+      var nn = 0;
+      if(p && p.notes){
+        for(var k2 in p.notes){
+          var v2 = p.notes[k2];
+          if(typeof v2 === "string" && v2.trim() && !notes[k2]){ notes[k2] = v2; nn++; }
+        }
+        if(nn) wr(LS_NOTE, notes);
+      }
+      inp.remove();
+      renderHome();
+      toast("已导入 · 重量 " + nl + " 条 · 记录 " + nh + " 次 · 心得 " + nn + " 天");
+    };
+    fr.onerror = function(){ toast("读文件出错了"); inp.remove(); };
+    fr.readAsText(f);
+  };
+  inp.click();
+}
+
+/* ================= 训练页 ================= */
+function renderSession(keepScroll){
+  var sc = window.pageYOffset || 0;
+  var p=PLAN[S.day], it=curItems()[S.i], total=totalSets(S.day), dn=dayDoneSets();
+  var pct = total? Math.round(dn/total*100) : 0;
+  var w = (loads[it.id] != null) ? loads[it.id] : it.load;
+  var done = S.done[it.id]||0;
+  var locked = T.on;
+
+  var h = '';
+  h += '<div class="top">'
+     +   '<div class="row"><button class="btn-sm btn-soft" data-a="back">‹ 返回</button>'
+     +     '<div class="grow"></div>'
+     +     '<div class="small muted">'+p.name+' · '+(S.i+1)+'/'+curItems().length+'</div></div>'
+     +   (S.date && S.date !== todayStr()
+            ? '<div class="tiny" style="margin-top:6px;color:var(--a)">补录 · '+S.date+'（完成记到这一天）</div>'
+            : '')
+     +   '<div class="bar-outer"><div class="bar-inner" style="width:'+pct+'%;background:'+p.hex+'"></div></div>'
+     +   '<div class="tiny muted" style="margin-top:6px">已完成 '+dn+' / '+total+' 组</div>'
+     + '</div>';
+
+  h += '<div style="margin-top:16px">'
+     +   '<div class="exname">'+it.nm+'</div>'
+     +   '<div class="meta"><span>'+it.sets+' 组 × '+it.reps+'</span><span class="dot"></span>'
+     +     '<span>动作间休息 '+it.rest+' 秒</span></div>'
+     + '</div>';
+
+  h += '<div class="cuebox glass">'
+     +   '<div class="lbl">怎么做</div>'
+     +   '<div class="cue">'+it.cue+'</div>'
+     +   '<div class="tell">→ '+it.tell+'</div>'
+     + '</div>';
+
+  h += '<a class="vlink" href="'+it.vid+'" target="_blank" rel="noopener">▶ 看动作演示</a>';
+
+  h += '<div class="weightrow"><span class="small muted">这次重量</span>'
+     +   '<input id="winput" inputmode="text" value="'+String(w).replace(/"/g,"&quot;")+'">'
+     +   '<span class="tiny muted">改完自动记住</span></div>';
+
+  h += '<div class="sets" id="sets">';
+  for(var i=0;i<it.sets;i++){
+    var on = i<done ? " on" : "";
+    h += '<button class="setbtn'+on+'" data-set="'+i+'"'+(locked && !(i<done) ? ' disabled' : '')+'>'
+       +   '<span>' + (i+1) + '</span>'
+       +   '<span class="n">' + (i<done ? "已完成" : (i===done ? (locked? "休息中":"点这里") : "未做")) + '</span>'
+       + '</button>';
+  }
+  h += '</div>';
+
+  h += '<div class="nav">'
+     +   '<button data-a="prev"'+(S.i===0?" disabled":"")+'>上一个</button>'
+     +   (S.i < curItems().length-1
+           ? '<button class="btn-main nx" data-a="next">下一个：'+curItems()[S.i+1].nm+'</button>'
+           : '<button class="btn-main" data-a="finish">结束训练</button>')
+     + '</div>';
+
+  if(done>=it.sets){
+    h += '<div class="tiny" style="margin-top:12px;color:var(--good)">这个动作做完了 ✓ 换下一个</div>';
+  }
+
+  var box=$("#session"); box.innerHTML=h;
+  $("#home").style.display="none";
+  $("#cal").style.display="none";
+  $("#note").style.display="none";
+  $("#set").style.display="none";
+  box.style.display="block";
+  document.body.classList.add("in-session");
+  if(keepScroll) window.scrollTo(0, sc);
+
+  box.onclick=function(e){
+    var st=e.target.closest("[data-set]");
+    if(st){ tapSet(parseInt(st.getAttribute("data-set"),10)); return; }
+    var b=e.target.closest("[data-a]"); if(!b) return;
+    var a=b.getAttribute("data-a");
+    if(a==="back"){ saveSess(); closeRest(); dropAwake(); S.day=null; renderHome(); return; }
+    if(a==="prev"){ if(S.i>0){ S.i--; saveSess(); renderSession(); } return; }
+    if(a==="next"){ if(S.i<curItems().length-1){ S.i++; saveSess(); renderSession(); } return; }
+    if(a==="finish"){ finishSession(); return; }
+  };
+  box.onchange=function(e){
+    if(e.target.id==="winput"){
+      loads[it.id]=e.target.value.trim();
+      wr(LS_LOAD,loads);
+      toast("已记住："+loads[it.id]);
+    }
+  };
+}
+function tapSet(i){
+  if(!S.day) return;
+  if(T.on){ toast("休息中，先把休息跳过"); return; }
+  var it=curItems()[S.i];
+  var done=S.done[it.id]||0;
+  if(done>i){ S.done[it.id]=i; saveSess(); renderSession(); return; }
+  S.done[it.id]=i+1;
+  saveSess(); renderSession();
+  if(i+1 < it.sets){ openRest(it.rest); }
+  else {
+    beep(1);
+    if(S.i < curItems().length-1){ toast("这个动作完成，换下一个"); }
+  }
+}
+function finishSession(){
+  var total=totalSets(S.day), dn=dayDoneSets();
+  var dt = S.date || todayStr();
+  var merged = false;
+  for(var i=0;i<his.length;i++){
+    if(his[i].date===dt && his[i].day===S.day){
+      his[i].sets = dn; his[i].total = total; his[i].ts = Date.now(); merged = true; break;
+    }
+  }
+  if(!merged) his.push({ ts:Date.now(), date:dt, day:S.day, sets:dn, total:total });
+  wr(LS_HIS,his);
+  clearSess(); closeRest(); dropAwake();
+
+  var dayName = PLAN[S.day].name;
+  var nxt = suggestDay().day;
+  var box=$("#session");
+  box.innerHTML =
+      '<div style="padding:40px 8px;text-align:center">'
+    +   '<div style="font-size:44px;margin-bottom:6px">✓</div>'
+    +   '<h2>'+dn+' / '+total+' 组</h2>'
+    +   '<div class="sub" style="margin:8px 0 6px">'+dayName+' · '+dt+(dt!==todayStr()?'（补录）':'')+'</div>'
+    +   '<div class="tiny muted" style="margin:0 0 22px">'
+    +     (nxt ? '下一次：'+PLAN[nxt].name : '今天已经练完一圈，休息吧') + '</div>'
+    +   '<button class="btn-main" data-a="home" style="min-width:200px">回到首页</button>'
+    + '</div>';
+  box.onclick=function(e){ if(e.target.closest("[data-a=home]")){ S.day=null; S.date=null; renderHome(); } };
+}
+
+/* ================= 设置面板 ================= */
+function openSheet(){
+  $("#sheet").className="on";
+  var btns = document.querySelectorAll("#seg-theme [data-th]");
+  for(var i=0;i<btns.length;i++) btns[i].className = (btns[i].getAttribute("data-th")===cfg.theme) ? "act" : "";
+  var fb = document.querySelectorAll("#seg-fit [data-fit]");
+  for(var j=0;j<fb.length;j++) fb[j].className = (fb[j].getAttribute("data-fit")===cfg.fit) ? "act" : "";
+  $("#r-bgblur").value = cfg.bgBlur;
+  $("#r-veil").value = Math.round(cfg.veil*100);
+  $("#r-glass").value = Math.round(cfg.glassA*100);
+  $("#r-gblur").value = cfg.glassBlur;
+}
+function closeSheet(){ $("#sheet").className=""; }
+
+function bindRange(id, key, scale){
+  $(id).addEventListener("input", function(e){
+    var v = Number(e.target.value);
+    cfg[key] = scale ? v/scale : v;
+    wr(LS_CFG, cfg);
+    applyLook();
+  });
+}
+bindRange("#r-bgblur", "bgBlur");
+bindRange("#r-gblur", "glassBlur");
+bindRange("#r-veil", "veil", 100);
+bindRange("#r-glass", "glassA", 100);
+
+$("#seg-theme").addEventListener("click", function(e){
+  var b=e.target.closest("[data-th]"); if(!b) return;
+  cfg.theme = b.getAttribute("data-th");
+  wr(LS_CFG,cfg); applyTheme(); openSheet();
+});
+$("#seg-fit").addEventListener("click", function(e){
+  var b=e.target.closest("[data-fit]"); if(!b) return;
+  cfg.fit = b.getAttribute("data-fit");
+  wr(LS_CFG,cfg); applyLook(); openSheet();
+});
+$("#btn-sheet-done").addEventListener("click", closeSheet);
+$("#sheet").addEventListener("click", function(e){ if(e.target.id==="sheet") closeSheet(); });
+
+$("#btn-bg").addEventListener("click", function(){ $("#filebg").click(); });
+$("#btn-bgclear").addEventListener("click", function(){
+  cfg.bg=""; wr(LS_CFG,cfg); applyLook(); toast("背景已清除");
+});
+$("#filebg").addEventListener("change", function(e){
+  var f = e.target.files && e.target.files[0]; if(!f) return;
+  var fr = new FileReader();
+  fr.onload = function(){
+    var img = new Image();
+    img.onload = function(){
+      try{
+        var maxW = 1800;
+        var sc = Math.min(1, maxW / img.width);
+        var c = document.createElement("canvas");
+        c.width = Math.round(img.width * sc);
+        c.height = Math.round(img.height * sc);
+        c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+        var data = c.toDataURL("image/jpeg", 0.85);
+        var old = cfg.bg;
+        cfg.bg = data;
+        if(!wr(LS_CFG,cfg)){ cfg.bg = old; toast("图片太大，换一张小一点的"); return; }
+        applyLook(); closeSheet(); toast("背景已设置");
+      }catch(err){ toast("这张图读不了，换一张"); }
+    };
+    img.onerror = function(){ toast("这张图读不了，换一张"); };
+    img.src = fr.result;
+  };
+  fr.readAsDataURL(f);
+  e.target.value = "";
+});
+
+/* ================= 启动 ================= */
+if(window.matchMedia){
+  try{
+    window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", function(){
+      if(cfg.theme==="auto") applyTheme();
+    });
+  }catch(e){}
+}
+document.addEventListener("visibilitychange", function(){
+  if(document.visibilityState==="visible" && S.day) keepAwake();
+});
+
+applyTheme();
+applyLook();
+
+/* 开屏：翻页后才进主界面；如果上次训练没结束，直接进（别挡着继续练） */
+(function boot(){
+  var sp = $("#splash");
+  var sess = readSess();
+  if(sp && !sess){ initSplash(); }
+  else if(sp){ sp.style.display = "none"; }
+  bindTabbar();
+  bindPhotoView();
+  if(sess){ TAB = "fit"; renderApp(); }
+  else { renderApp(); }
+})();
+</script>
+</body>
+</html>
