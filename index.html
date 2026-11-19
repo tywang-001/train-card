@@ -489,10 +489,13 @@ var PLAN = {
       cue:"绳高于头，往额头方向拉；末端外旋（手背朝上）",
       tell:"后束 + 肩胛之间发酸", vid:V("面拉 face pull 教学") }
   ]},
-  B: { name:"B · 下肢蹲", sub:"周二 · 股四主导 · 约 45 分钟", hex:"var(--b)", items:[
+  B: { name:"B · 下肢蹲", sub:"周二 · 股四主导 · 约 50 分钟", hex:"var(--b)", items:[
     { id:"sq", nm:"杠铃深蹲", sets:4, reps:"6–8", load:"70 含杆", rest:180,
       cue:"先单车 5 分钟 + 徒手深蹲 15 下；空杆 10 → 40 做 5 再上重量；屁股先往后坐再往下；膝盖跟脚尖；全程别塌腰",
       tell:"大腿前侧 + 臀酸，腰不酸、膝盖不内扣", vid:V("杠铃深蹲 新手 教学") },
+    { id:"lp", nm:"腿举", sets:3, reps:"10–12", load:"120 起", rest:90,
+      cue:"背和腰贴住靠垫、别拱起来；下到大腿约 90°；膝盖始终跟脚尖同向，别锁死；选到第 12 次刚好力竭的重量",
+      tell:"大腿前侧烧，膝盖不疼、腰不顶", vid:V("腿举 正确姿势") },
     { id:"bss", nm:"保加利亚蹲", sets:2, reps:"8–10/侧", load:"10/手", rest:90,
       cue:"每手 10 kg；前脚站远一点；下坐时身体略前倾；起身用前脚踩地",
       tell:"前腿臀 + 腿酸，后腿不酸", vid:V("保加利亚分腿蹲") },
@@ -506,11 +509,11 @@ var PLAN = {
       cue:"下背贴地，用腹把胸口卷起来；别用手拉脖子；幅度小、顶端停 1 秒",
       tell:"上腹收紧到发烫，脖子不酸", vid:V("负重卷腹 腹直肌") }
   ]},
-  C: { name:"C · 上肢拉", sub:"周四 · 背主导 · 约 55 分钟", hex:"var(--c)", items:[
-    { id:"pd", nm:"对握高位下拉", sets:4, reps:"10–12", load:"45–50", rest:90,
+  C: { name:"C · 上肢拉", sub:"周四 · 背主导 · 约 60 分钟", hex:"var(--c)", items:[
+    { id:"pd", nm:"对握高位下拉", sets:6, reps:"10–12", load:"45–50", rest:90,
       cue:"先让肩胛上回旋，再用手肘往下带；胸口微微上提",
       tell:"腋下外沿 + 背阔外沿酸，二头不先累", vid:V("对握高位下拉") },
-    { id:"cr", nm:"坐姿绳索划船", sets:3, reps:"10–12", load:"35–40", rest:90,
+    { id:"cr", nm:"坐姿绳索划船", sets:2, reps:"10–12", load:"35–40", rest:90,
       cue:"胸挺住不后仰；肘贴身往后拉；末端夹一下再回",
       tell:"肩胛之间 + 背阔酸", vid:V("坐姿绳索划船") },
     { id:"inc", nm:"上斜哑铃推 30°", sets:2, reps:"8–10", load:"15–17.5", rest:90,
@@ -519,7 +522,7 @@ var PLAN = {
     { id:"fly", nm:"坐姿夹胸", sets:2, reps:"12–15", load:"40", rest:60,
       cue:"手臂不完全伸直、肘微屈固定；夹住 1 秒；肩不前顶",
       tell:"胸中间夹紧感 —— 是夹不是推", vid:V("坐姿夹胸 器械 教学") },
-    { id:"pdn", nm:"直臂下压", sets:3, reps:"12–15", load:"4 片", rest:60,
+    { id:"pdn", nm:"直臂下压", sets:2, reps:"12–15", load:"4 片", rest:60,
       cue:"先扣腕再肩前伸；手臂基本伸直，用背把杆压下去",
       tell:"背阔外沿酸；肩膀疼就停，换面拉补", vid:V("直臂下压 背阔肌") },
     { id:"rev", nm:"坐姿反飞鸟", sets:2, reps:"15", load:"5", rest:60,
@@ -528,7 +531,7 @@ var PLAN = {
     { id:"curl", nm:"哑铃弯举", sets:3, reps:"10–12", load:"10", rest:60,
       cue:"肘固定不动；下放 2–3 秒",
       tell:"二头烧，前臂不先累", vid:V("哑铃弯举 教学") },
-    { id:"lat", nm:"侧平举", sets:3, reps:"12–15", load:"10", rest:60,
+    { id:"lat", nm:"侧平举", sets:4, reps:"12–15", load:"10", rest:60,
       cue:"轻重量、严格；抬到肩平就停；留 1 下力气",
       tell:"中束烧，脖子不紧", vid:V("哑铃侧平举 中束") }
   ]},
@@ -552,8 +555,8 @@ var PLAN = {
       cue:"先卷腹再抬腿，别甩；控制下放 2 秒；身体不晃",
       tell:"下腹收紧，肩不耸", vid:V("悬垂举腿 下腹") }
   ]},
-  E: { name:"E · 肩 + 手臂", sub:"周六 · 中束主导 · 约 40 分钟", hex:"#c9a227", items:[
-    { id:"lat2", nm:"侧平举", sets:4, reps:"12–15", load:"10", rest:60,
+  E: { name:"E · 肩 + 手臂", sub:"周六 · 中束主导 · 约 45 分钟", hex:"#c9a227", items:[
+    { id:"lat2", nm:"侧平举", sets:5, reps:"12–15", load:"10", rest:60,
       cue:"末组可降到 7.5 做 15 下；抬到肩平停，不耸肩",
       tell:"中束烧，斜方不酸", vid:V("哑铃侧平举 中束") },
     { id:"ohp", nm:"坐姿哑铃推举", sets:3, reps:"8–10", load:"12.5–15", rest:90,
@@ -601,7 +604,7 @@ function rd(k,d){ try{ var v=localStorage.getItem(k); return v?JSON.parse(v):d; 
 function wr(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } }
 
 var DEF = { mode:"down", theme:"auto", bg:"", bgBlur:0, veil:0.28, glassA:0.72, glassBlur:16, fit:"cover" };
-var VER = "v5.11 · 2026-11-19";
+var VER = "v5.13 · 2026-11-20";
 var cfg = rd(LS_CFG, {});
 for(var k in DEF){ if(cfg[k]===undefined) cfg[k]=DEF[k]; }
 var loads = rd(LS_LOAD, {});
