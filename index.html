@@ -470,9 +470,9 @@ function V(q){ return "https://search.bilibili.com/all?keyword=" + encodeURIComp
 
 var PLAN = {
   A: { name:"A · 上肢推", sub:"周一 · 胸主导 · 约 50 分钟", hex:"var(--a)", items:[
-    { id:"dbp", nm:"哑铃卧推", sets:4, reps:"6–8", load:"22.5/只", rest:150,
-      cue:"先单车 5 分钟 + 弹力带外旋 2×15；空手→15→20 各 1 组递增再上工作重量；肩胛后下压住不松；上臂与躯干约 45°",
-      tell:"胸外侧拉伸感、推的时候胸先吃力；前束不先累、肩不响", vid:V("哑铃卧推 正确姿势") },
+    { id:"bbp", nm:"杠铃卧推", sets:4, reps:"6–8", load:"55–60 含杆", rest:180,
+      cue:"先单车 5 分钟 + 弹力带外旋 2×15；空杆 20×10 → 30×5 → 40×3 → 50×2 再上工作重量；肩胛后下压住不松、脚踩实；杠铃落到乳头上方一点，肘约 45–60° 不外展；放架子保险销，单人别硬顶最后一组",
+      tell:"胸整体吃力、三头跟着酸；肩前侧不疼、不塌肩、不晃", vid:V("杠铃卧推 正确姿势") },
     { id:"inc", nm:"上斜哑铃推 30°", sets:3, reps:"8–10", load:"15–17.5", rest:90,
       cue:"凳 30° 不是 45°；下到锁骨下方一点；别耸肩去够",
       tell:"锁骨下面那块（上胸）酸胀", vid:V("上斜哑铃卧推 30度") },
@@ -493,7 +493,7 @@ var PLAN = {
     { id:"sq", nm:"杠铃深蹲", sets:4, reps:"6–8", load:"70 含杆", rest:180,
       cue:"先单车 5 分钟 + 徒手深蹲 15 下；空杆 10 → 40 做 5 再上重量；屁股先往后坐再往下；膝盖跟脚尖；全程别塌腰",
       tell:"大腿前侧 + 臀酸，腰不酸、膝盖不内扣", vid:V("杠铃深蹲 新手 教学") },
-    { id:"lp", nm:"腿举", sets:3, reps:"10–12", load:"120 起", rest:90,
+    { id:"lp", nm:"腿举", sets:3, reps:"10–12", load:"120 起", rest:120,
       cue:"背和腰贴住靠垫、别拱起来；下到大腿约 90°；膝盖始终跟脚尖同向，别锁死；选到第 12 次刚好力竭的重量",
       tell:"大腿前侧烧，膝盖不疼、腰不顶", vid:V("腿举 正确姿势") },
     { id:"bss", nm:"保加利亚蹲", sets:2, reps:"8–10/侧", load:"10/手", rest:90,
@@ -510,7 +510,7 @@ var PLAN = {
       tell:"上腹收紧到发烫，脖子不酸", vid:V("负重卷腹 腹直肌") }
   ]},
   C: { name:"C · 上肢拉", sub:"周四 · 背主导 · 约 60 分钟", hex:"var(--c)", items:[
-    { id:"pd", nm:"对握高位下拉", sets:6, reps:"10–12", load:"45–50", rest:90,
+    { id:"pd", nm:"对握高位下拉", sets:6, reps:"10–12", load:"45–50", rest:120,
       cue:"先让肩胛上回旋，再用手肘往下带；胸口微微上提",
       tell:"腋下外沿 + 背阔外沿酸，二头不先累", vid:V("对握高位下拉") },
     { id:"cr", nm:"坐姿绳索划船", sets:2, reps:"10–12", load:"35–40", rest:90,
@@ -536,10 +536,10 @@ var PLAN = {
       tell:"中束烧，脖子不紧", vid:V("哑铃侧平举 中束") }
   ]},
   D: { name:"D · 下肢后链", sub:"周五 · 臀腿主导 · 约 45 分钟", hex:"var(--d)", items:[
-    { id:"sq2", nm:"杠铃深蹲（速度组）", sets:3, reps:"5", load:"65–70 含杆", rest:150,
+    { id:"sq2", nm:"杠铃深蹲（速度组）", sets:3, reps:"5", load:"65–70 含杆", rest:180,
       cue:"先空杆 10 → 40 做 5；同 B 日动作但轻 5 kg，上下都快，RPE 6–7，不留疲劳",
       tell:"蹲完还有余力，动作比重量重要", vid:V("杠铃深蹲 速度 训练") },
-    { id:"rdl", nm:"罗马尼亚硬拉", sets:3, reps:"8–10", load:"60–65", rest:120,
+    { id:"rdl", nm:"罗马尼亚硬拉", sets:3, reps:"8–10", load:"60–65", rest:150,
       cue:"膝微屈固定；髋往后推、杆贴腿下到大腿中段；背不圆、别用腰提",
       tell:"臀 + 大腿后侧被拉开，腰不酸", vid:V("罗马尼亚硬拉 RDL 教学") },
     { id:"hip", nm:"杠铃臀推", sets:2, reps:"10–12", load:"60–70", rest:90,
@@ -604,7 +604,7 @@ function rd(k,d){ try{ var v=localStorage.getItem(k); return v?JSON.parse(v):d; 
 function wr(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } }
 
 var DEF = { mode:"down", theme:"auto", bg:"", bgBlur:0, veil:0.28, glassA:0.72, glassBlur:16, fit:"cover" };
-var VER = "v5.13 · 2026-11-20";
+var VER = "v5.15 · 2026-11-22";
 var cfg = rd(LS_CFG, {});
 for(var k in DEF){ if(cfg[k]===undefined) cfg[k]=DEF[k]; }
 var loads = rd(LS_LOAD, {});
@@ -984,7 +984,14 @@ function renderFit(){
      + '减载：每练满 5 周，用一周把重量降 10%、组数砍到 2/3，之后重新往上加。<br>'
      + '热身不算在组数里，但每次都必须做：单车 5 分钟 + 弹力带外旋 2×15 + 主项递增 2–3 组。<br>'
      + '记录：换计划之前练的都算「上一套」——一条没删，历史、日历、重量都还在，'
-     + '但「新一套已练」和下次排期从 11-19 这一套重新算，第一练是 A · 上肢推。</div>';
+     + '但「新一套已练」和下次排期从 11-19 这一套重新算，第一练是 A · 上肢推。</div>'
+     + '<div class="tiny muted" style="margin-top:8px;line-height:1.7">'
+     + '间歇（你有心率表就按这个来，没有就看呼吸能不能说完整句子）：<br>'
+     + '大重量复合（杠铃卧推/深蹲/硬拉/T 杆划船）→ 心率回到 120 以下，大约 2.5–3 分钟；<br>'
+     + '中等复合（高位下拉/腿举/推举/臀推/保加利亚）→ 130 以下，大约 2 分钟；<br>'
+     + '孤立（侧平举/弯举/下压/夹胸/面拉/提踵）→ 60–75 秒，不用看心率，看了也不准。<br>'
+     + '通用兜底：某一组做不满次数区间下限，下一组就多歇 30 秒；'
+     + '整场都做得很轻松（每组都顶满上限、心率上不去）说明重量轻了，别靠减间歇补。</div>';
 
   var box=$("#home"); box.innerHTML=h; box.style.display="block";
   box.onclick=function(e){
