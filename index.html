@@ -535,22 +535,19 @@ var PLAN = {
       cue:"轻重量、严格；抬到肩平就停；留 1 下力气",
       tell:"中束烧，脖子不紧", vid:V("哑铃侧平举 中束") }
   ]},
-  D: { name:"D · 下肢后链", sub:"周五 · 臀腿主导 · 约 45 分钟", hex:"var(--d)", items:[
+  D: { name:"D · 下肢后链", sub:"周五 · 后链 + 背宽 · 约 40 分钟", hex:"var(--d)", items:[
     { id:"sq2", nm:"杠铃深蹲（速度组）", sets:3, reps:"5", load:"65–70 含杆", rest:180,
       cue:"先空杆 10 → 40 做 5；同 B 日动作但轻 5 kg，上下都快，RPE 6–7，不留疲劳",
       tell:"蹲完还有余力，动作比重量重要", vid:V("杠铃深蹲 速度 训练") },
+    { id:"pdl", nm:"宽握高位下拉", sets:3, reps:"10–12", load:"35–40", rest:120,
+      cue:"握距比肩宽一掌；先沉肩，再用手肘往两侧下拉到锁骨上方；别用身体后仰去带",
+      tell:"背阔外侧 + 大圆肌（腋下外沿）酸，二头不先累", vid:V("宽握高位下拉 背阔肌") },
     { id:"rdl", nm:"罗马尼亚硬拉", sets:3, reps:"8–10", load:"60–65", rest:150,
       cue:"膝微屈固定；髋往后推、杆贴腿下到大腿中段；背不圆、别用腰提",
       tell:"臀 + 大腿后侧被拉开，腰不酸", vid:V("罗马尼亚硬拉 RDL 教学") },
-    { id:"hip", nm:"杠铃臀推", sets:2, reps:"10–12", load:"60–70", rest:90,
-      cue:"上背靠凳边；顶到躯干与地平行就停，别过度顶腰",
-      tell:"臀发力，腿后侧辅助，腰不酸", vid:V("杠铃臀推 臀大肌") },
     { id:"lc", nm:"俯卧腿弯举", sets:3, reps:"10–12", load:"25–30", rest:60,
       cue:"慢下慢上不甩；顶端停半秒",
       tell:"腿后侧（腘绳）烧", vid:V("俯卧腿弯举") },
-    { id:"cal", nm:"站姿提踵", sets:2, reps:"12–15", load:"负重 20–30", rest:45,
-      cue:"垫到最高停 1 秒，再慢慢下到底；膝不弯",
-      tell:"小腿肚烧，跟腱不疼", vid:V("站姿提踵 小腿") },
     { id:"c2", nm:"悬垂举腿", sets:3, reps:"10–12", load:"自重", rest:60, core:1,
       cue:"先卷腹再抬腿，别甩；控制下放 2 秒；身体不晃",
       tell:"下腹收紧，肩不耸", vid:V("悬垂举腿 下腹") }
@@ -604,7 +601,7 @@ function rd(k,d){ try{ var v=localStorage.getItem(k); return v?JSON.parse(v):d; 
 function wr(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } }
 
 var DEF = { mode:"down", theme:"auto", bg:"", bgBlur:0, veil:0.28, glassA:0.72, glassBlur:16, fit:"cover" };
-var VER = "v5.15 · 2026-11-22";
+var VER = "v5.16 · 2026-11-26";
 var cfg = rd(LS_CFG, {});
 for(var k in DEF){ if(cfg[k]===undefined) cfg[k]=DEF[k]; }
 var loads = rd(LS_LOAD, {});
